@@ -5,8 +5,8 @@ from qtpy.QtWidgets import QApplication
 from useq import WellPlate
 
 from pymmcore_widgets.hcs._calibration_widget._calibration_widget import (
-    _CalibrationData,
-    _PlateCalibrationWidget,
+    CalibrationData,
+    PlateCalibrationWidget,
 )
 
 with suppress(ImportError):
@@ -20,10 +20,10 @@ app = QApplication([])
 mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
-cb = _PlateCalibrationWidget(mmcore=mmc)
+cb = PlateCalibrationWidget(mmcore=mmc)
 
 cb.setValue(
-    _CalibrationData(
+    CalibrationData(
         plate=plate,
         calibration_positions_a1=[(-10, 0), (0, 10), (10, 0)],
         calibration_positions_an=[(90, 0), (100, 10), (110, 0)],

@@ -27,11 +27,11 @@ from useq import WellPlate  # noqa: TCH002
 from pymmcore_widgets.hcs._graphics_items import GREEN, RED
 
 from ._calibration_sub_widgets import (
+    CalibrationLabel,
+    CalibrationModeWidget,
+    CalibrationTable,
     Mode,
-    _CalibrationLabel,
-    _CalibrationModeWidget,
-    _CalibrationTable,
-    _TestCalibrationWidget,
+    TestCalibrationWidget,
 )
 from ._util import (
     apply_rotation_matrix,
@@ -48,7 +48,7 @@ CIRCLE_CENTER_POINTS: int = 1
 CIRCLE_EDGES_POINTS: int = 3
 
 
-class _CalibrationData(NamedTuple):
+class CalibrationData(NamedTuple):
     """Calibration data for the plate.
 
     Attributes
@@ -76,7 +76,7 @@ class _CalibrationData(NamedTuple):
     calibration_positions_an: ClassVar[list[tuple[float, float]]] = []
 
 
-class _PlateCalibrationWidget(QWidget):
+class PlateCalibrationWidget(QWidget):
     """Widget to calibrate the sample plate.
 
     Attributes
@@ -127,14 +127,14 @@ class _PlateCalibrationWidget(QWidget):
 
         self._plate: WellPlate | None = None
 
-        self._calibration_data: _CalibrationData | None = None
+        self._calibration_data: CalibrationData | None = None
 
         # calibration mode
-        self._calibration_mode = _CalibrationModeWidget()
+        self._calibration_mode = CalibrationModeWidget()
 
         # calibration tables
-        self._table_a1 = _CalibrationTable()
-        self._table_an = _CalibrationTable()
+        self._table_a1 = CalibrationTable()
+        self._table_an = CalibrationTable()
         table_group = QGroupBox()
         table_group_layout = QHBoxLayout(table_group)
         table_group_layout.setContentsMargins(0, 0, 0, 0)
@@ -158,8 +158,8 @@ class _PlateCalibrationWidget(QWidget):
         table_and_btn_wdg_layout.addWidget(table_group)
         table_and_btn_wdg_layout.addLayout(calibrate_btn_wdg_layout)
         # test calibration and calibration label group
-        self._test_calibration = _TestCalibrationWidget()
-        self._calibration_label = _CalibrationLabel()
+        self._test_calibration = TestCalibrationWidget()
+        self._calibration_label = CalibrationLabel()
         bottom_group_layout = QHBoxLayout()
         bottom_group_layout.setSpacing(10)
         bottom_group_layout.setContentsMargins(0, 0, 0, 0)
@@ -180,11 +180,11 @@ class _PlateCalibrationWidget(QWidget):
 
     # _________________________PUBLIC METHODS_________________________ #
 
-    def value(self) -> _CalibrationData | None:
+    def value(self) -> CalibrationData | None:
         """Return the calibration data."""
         return self._calibration_data
 
-    def setValue(self, value: _CalibrationData | None) -> None:
+    def setValue(self, value: CalibrationData | None) -> None:
         """Set the calibration data."""
         # reset calibration state
         self._reset_calibration()
@@ -288,7 +288,7 @@ class _PlateCalibrationWidget(QWidget):
         # set calibration_info property
         pos_a1 = self._table_a1.value()
         pos_an = self._table_an.value() if self._plate.columns > 1 else []
-        self._calibration_data = _CalibrationData(
+        self._calibration_data = CalibrationData(
             plate=self._plate,
             calibrated=True,
             a1_center_xy=a1_center,
@@ -322,7 +322,7 @@ class _PlateCalibrationWidget(QWidget):
         return (a1_x, a1_y), (an_x, an_y)
 
     def _find_center(
-        self, table: _CalibrationTable
+        self, table: CalibrationTable
     ) -> tuple[float | None, float | None]:
         """Find the center given 1, 2, 3 or 4 points depending on the well shape."""
         pos = table.value()

@@ -16,13 +16,13 @@ from qtpy.QtWidgets import (
 from ._graphics_items import GREEN
 
 if TYPE_CHECKING:
-    from ._graphics_items import Well, _WellGraphicsItem
+    from ._graphics_items import Well, WellGraphicsItem
 
 SELECTED_COLOR = QBrush(QColor(GREEN))
 UNSELECTED_COLOR = QBrush(Qt.GlobalColor.lightGray)
 
 
-class _PlateGraphicsScene(QGraphicsScene):
+class PlateGraphicsScene(QGraphicsScene):
     """Custom QGraphicsScene to control the plate/well selection.
 
     To get the list of selected well info, use the `value` method
@@ -87,7 +87,7 @@ class _PlateGraphicsScene(QGraphicsScene):
                 self._set_selected(item, False)
         self.valueChanged.emit()
 
-    def _set_selected(self, item: _WellGraphicsItem, state: bool) -> None:
+    def _set_selected(self, item: WellGraphicsItem, state: bool) -> None:
         """Select or deselect the item."""
         item.brush = SELECTED_COLOR if state else UNSELECTED_COLOR
         item.setSelected(state)

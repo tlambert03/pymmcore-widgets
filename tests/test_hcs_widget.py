@@ -17,30 +17,30 @@ from useq._grid import Shape
 from pymmcore_widgets import HCSWizard
 from pymmcore_widgets.hcs._calibration_widget._calibration_sub_widgets import (
     ROLE,
-    _CalibrationModeWidget,
-    _CalibrationTable,
-    _TestCalibrationWidget,
+    CalibrationModeWidget,
+    CalibrationTable,
+    TestCalibrationWidget,
 )
 from pymmcore_widgets.hcs._calibration_widget._calibration_widget import (
     Mode,
-    _CalibrationData,
-    _PlateCalibrationWidget,
+    CalibrationData,
+    PlateCalibrationWidget,
 )
 from pymmcore_widgets.hcs._fov_widget._fov_sub_widgets import (
     Center,
-    _CenterFOVWidget,
-    _WellView,
-    _WellViewData,
+    CenterFOVWidget,
+    WellView,
+    WellViewData,
 )
-from pymmcore_widgets.hcs._fov_widget._fov_widget import _FOVSelectorWidget
+from pymmcore_widgets.hcs._fov_widget._fov_widget import FOVSelectorWidget
 from pymmcore_widgets.hcs._graphics_items import (
     Well,
-    _FOVGraphicsItem,
-    _WellAreaGraphicsItem,
+    FOVGraphicsItem,
+    WellAreaGraphicsItem,
 )
 from pymmcore_widgets.hcs._plate_widget import (
     PlateInfo,
-    _PlateSelectorWidget,
+    PlateSelectorWidget,
 )
 from pymmcore_widgets.hcs._util import PLATES
 from pymmcore_widgets.useq_widgets._grid_row_column_widget import GridRowColumnWidget
@@ -64,7 +64,7 @@ CUSTOM_PLATE = WellPlate(
 
 
 def test_plate_selector_widget_set_get_value(qtbot: QtBot):
-    wdg = _PlateSelectorWidget()
+    wdg = PlateSelectorWidget()
     qtbot.addWidget(wdg)
 
     info = PlateInfo(plate=CUSTOM_PLATE.replace(name=""), wells=[])
@@ -94,7 +94,7 @@ def test_plate_selector_widget_set_get_value(qtbot: QtBot):
 
 
 def test_plate_selector_widget_combo(qtbot: QtBot):
-    wdg = _PlateSelectorWidget()
+    wdg = PlateSelectorWidget()
     qtbot.addWidget(wdg)
 
     wdg.plate_combo.setCurrentText("96-well")
@@ -102,7 +102,7 @@ def test_plate_selector_widget_combo(qtbot: QtBot):
 
 
 def test_calibration_mode_widget(qtbot: QtBot):
-    wdg = _CalibrationModeWidget()
+    wdg = CalibrationModeWidget()
     qtbot.addWidget(wdg)
 
     modes = [
@@ -122,7 +122,7 @@ def test_calibration_mode_widget(qtbot: QtBot):
 def test_calibration_table_widget(global_mmcore: CMMCorePlus, qtbot: QtBot):
     mmc = global_mmcore
 
-    wdg = _CalibrationTable(mmcore=mmc)
+    wdg = CalibrationTable(mmcore=mmc)
     qtbot.addWidget(wdg)
 
     assert wdg.table().rowCount() == 0
@@ -151,7 +151,7 @@ def test_calibration_table_widget(global_mmcore: CMMCorePlus, qtbot: QtBot):
 def test_calibration_move_to_edge_widget(global_mmcore: CMMCorePlus, qtbot: QtBot):
     mmc = global_mmcore
 
-    wdg = _TestCalibrationWidget(mmcore=mmc)
+    wdg = TestCalibrationWidget(mmcore=mmc)
     qtbot.addWidget(wdg)
 
     assert wdg._letter_combo.count() == 0
@@ -166,14 +166,14 @@ def test_calibration_move_to_edge_widget(global_mmcore: CMMCorePlus, qtbot: QtBo
 
 
 def test_calibration_widget(global_mmcore: CMMCorePlus, qtbot: QtBot):
-    wdg = _PlateCalibrationWidget(mmcore=global_mmcore)
+    wdg = PlateCalibrationWidget(mmcore=global_mmcore)
     qtbot.addWidget(wdg)
 
     assert wdg.value() is None
     assert wdg._calibration_label.value() == "Plate Not Calibrated!"
 
-    plate = PLATES["coverslip-22mm"]
-    cal = _CalibrationData(plate=plate)
+    plate = PLATES["coverslip-22mm-square"]
+    cal = CalibrationData(plate=plate)
 
     wdg.setValue(cal)
 
@@ -200,7 +200,7 @@ def test_calibration_widget(global_mmcore: CMMCorePlus, qtbot: QtBot):
 
     assert wdg.isCalibrated()
     assert wdg._calibration_label.value() == "Plate Calibrated!"
-    assert wdg.value() == _CalibrationData(
+    assert wdg.value() == CalibrationData(
         calibrated=True,
         plate=plate,
         a1_center_xy=(-55.0, 35.0),
@@ -210,7 +210,7 @@ def test_calibration_widget(global_mmcore: CMMCorePlus, qtbot: QtBot):
     )
 
     plate = PLATES["96-well"]
-    cal = _CalibrationData(plate=plate)
+    cal = CalibrationData(plate=plate)
     wdg.setValue(cal)
 
     assert not wdg.isCalibrated()
@@ -236,7 +236,7 @@ def test_calibration_widget(global_mmcore: CMMCorePlus, qtbot: QtBot):
 
 
 def test_center_widget(qtbot: QtBot):
-    wdg = _CenterFOVWidget()
+    wdg = CenterFOVWidget()
     qtbot.addWidget(wdg)
 
     value = wdg.value()
@@ -351,12 +351,12 @@ class SceneItems(NamedTuple):
     well_rect: int  # QGraphicsRectItem
 
 
-def get_items_number(wdg: _WellView) -> SceneItems:
+def get_items_number(wdg: WellView) -> SceneItems:
     """Return the number of items in the scene as a SceneItems namedtuple."""
     items = wdg.scene().items()
-    fovs = len([t for t in items if isinstance(t, _FOVGraphicsItem)])
+    fovs = len([t for t in items if isinstance(t, FOVGraphicsItem)])
     lines = len([t for t in items if isinstance(t, QGraphicsLineItem)])
-    well_area = len([t for t in items if isinstance(t, _WellAreaGraphicsItem)])
+    well_area = len([t for t in items if isinstance(t, WellAreaGraphicsItem)])
     well_circle = len([t for t in items if isinstance(t, QGraphicsEllipseItem)])
     well_rect = len([t for t in items if isinstance(t, QGraphicsRectItem)])
     return SceneItems(fovs, lines, well_area, well_circle, well_rect)
@@ -389,12 +389,12 @@ modes = [
 def test_well_view_widget_value(
     qtbot: QtBot, mode: Center | GridRowsColumns | RandomPoints, items: SceneItems
 ):
-    wdg = _WellView()
+    wdg = WellView()
     qtbot.addWidget(wdg)
-    assert wdg.value() == _WellViewData()
+    assert wdg.value() == WellViewData()
 
     circular = mode.shape == Shape.ELLIPSE if isinstance(mode, RandomPoints) else False
-    view_data = _WellViewData(
+    view_data = WellViewData(
         well_size=(6400, 6400),
         circular=circular,
         padding=20,
@@ -410,11 +410,11 @@ def test_well_view_widget_value(
 
 
 def test_well_view_widget_update(qtbot: QtBot):
-    view_data = _WellViewData(
+    view_data = WellViewData(
         well_size=(6400, 6400),
         mode=Center(x=0, y=0, fov_width=512, fov_height=512),
     )
-    wdg = _WellView(data=view_data)
+    wdg = WellView(data=view_data)
     qtbot.addWidget(wdg)
 
     # set mode
@@ -455,7 +455,7 @@ def test_well_view_widget_update(qtbot: QtBot):
 
 
 def test_fov_selector_widget_none(qtbot: QtBot):
-    wdg = _FOVSelectorWidget()
+    wdg = FOVSelectorWidget()
     qtbot.addWidget(wdg)
 
     assert wdg.value() == (None, Center(x=0.0, y=0.0))
@@ -466,7 +466,7 @@ def test_fov_selector_widget_none(qtbot: QtBot):
 
 def test_fov_selector_widget(qtbot: QtBot):
     plate = PLATES["96-well"]
-    wdg = _FOVSelectorWidget(
+    wdg = FOVSelectorWidget(
         plate=plate,
         mode=Center(x=0, y=0, fov_width=500, fov_height=500),
     )
@@ -480,7 +480,7 @@ def test_fov_selector_widget(qtbot: QtBot):
 
     # grid
     grid = GridRowsColumns(overlap=10, rows=2, columns=3, fov_width=512, fov_height=512)
-    coverslip = PLATES["coverslip-22mm"]
+    coverslip = PLATES["coverslip-22mm-square"]
     wdg.setValue(coverslip, grid)
 
     current_plate, mode = wdg.value()

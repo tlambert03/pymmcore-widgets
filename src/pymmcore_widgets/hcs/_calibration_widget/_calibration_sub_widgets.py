@@ -58,7 +58,7 @@ class Mode(NamedTuple):
     icon: QIcon | None = None
 
 
-class _CalibrationModeWidget(QGroupBox):
+class CalibrationModeWidget(QGroupBox):
     """Widget to select the calibration mode."""
 
     valueChanged = Signal(object)
@@ -102,7 +102,7 @@ class _CalibrationModeWidget(QGroupBox):
         return cast(Mode, mode)
 
 
-class _CalibrationTable(DataTableWidget):
+class CalibrationTable(DataTableWidget):
     """Table to store the calibration positions."""
 
     X = FloatColumn(
@@ -197,7 +197,7 @@ class _CalibrationTable(DataTableWidget):
             self.table().setRowData(row, data)
 
 
-class _TestCalibrationWidget(QGroupBox):
+class TestCalibrationWidget(QGroupBox):
     """Widget to test the calibration of a well.
 
     You can select a well and move the XY stage to a random edge point of the well.
@@ -286,7 +286,7 @@ class _TestCalibrationWidget(QGroupBox):
         return name
 
 
-class _CalibrationLabel(QGroupBox):
+class CalibrationLabel(QGroupBox):
     """Label to show the calibration status."""
 
     def __init__(self, parent: QWidget | None = None) -> None:

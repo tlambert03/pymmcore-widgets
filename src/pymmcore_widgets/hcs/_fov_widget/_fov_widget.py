@@ -19,19 +19,15 @@ from useq import (
     RandomPoints,
 )
 
-from pymmcore_widgets.hcs._fov_widget._fov_sub_widgets import (
-    Center,
-    _CenterFOVWidget,
-    _WellView,
-    _WellViewData,
-)
 from pymmcore_widgets.hcs._graphics_items import (
-    _FOVGraphicsItem,
-    _WellAreaGraphicsItem,
+    FOVGraphicsItem,
+    WellAreaGraphicsItem,
 )
 from pymmcore_widgets.useq_widgets._grid import _SeparatorWidget
 from pymmcore_widgets.useq_widgets._grid_row_column_widget import GridRowColumnWidget
 from pymmcore_widgets.useq_widgets._random_points_widget import RandomPointWidget
+
+from ._fov_sub_widgets import Center, CenterFOVWidget, WellView, WellViewData
 
 if TYPE_CHECKING:
     from useq import WellPlate
@@ -45,7 +41,7 @@ RECT = "rectangle"  # Shape.RECTANGLE in useq
 ELLIPSE = "ellipse"  # Shape.ELLIPSE in useq
 
 
-class _FOVSelectorWidget(QWidget):
+class FOVSelectorWidget(QWidget):
     """Widget to select the FOVVs per well of the plate."""
 
     valueChanged = Signal(object)
@@ -61,10 +57,10 @@ class _FOVSelectorWidget(QWidget):
         self._plate: WellPlate | None = plate
 
         # graphics scene to draw the well and the fovs
-        self.well_view = _WellView()
+        self.well_view = WellView()
 
         # centerwidget
-        self.center_wdg = _CenterFOVWidget()
+        self.center_wdg = CenterFOVWidget()
         self.center_radio_btn = QRadioButton()
         self.center_radio_btn.setChecked(True)
         self.center_radio_btn.setSizePolicy(*FIXED_POLICY)
@@ -102,7 +98,7 @@ class _FOVSelectorWidget(QWidget):
         self._mode_btn_group.addButton(self.random_radio_btn)
         self._mode_btn_group.addButton(self.grid_radio_btn)
         self.MODE: dict[
-            str, _CenterFOVWidget | RandomPointWidget | GridRowColumnWidget
+            str, CenterFOVWidget | RandomPointWidget | GridRowColumnWidget
         ] = {
             CENTER: self.center_wdg,
             RANDOM: self.random_wdg,
@@ -157,7 +153,7 @@ class _FOVSelectorWidget(QWidget):
 
         if self._plate is None:
             # reset view scene and mode widgets
-            self.well_view.setValue(_WellViewData())
+            self.well_view.setValue(WellViewData())
             with signals_blocked(self.random_wdg):
                 self.random_wdg.reset()
             with signals_blocked(self.grid_wdg):
@@ -169,7 +165,7 @@ class _FOVSelectorWidget(QWidget):
 
         # update view data
         well_size_x, well_size_y = self._plate.well_size
-        view_data = _WellViewData(
+        view_data = WellViewData(
             # plate well size in mm, convert to µm
             well_size=(well_size_x * 1000, well_size_y * 1000),
             circular=self._plate.circular_wells,
@@ -189,7 +185,7 @@ class _FOVSelectorWidget(QWidget):
 
     def _get_mode_widget(
         self,
-    ) -> _CenterFOVWidget | RandomPointWidget | GridRowColumnWidget:
+    ) -> CenterFOVWidget | RandomPointWidget | GridRowColumnWidget:
         """Return the current mode."""
         for btn in self._mode_btn_group.buttons():
             if btn.isChecked():
@@ -226,7 +222,7 @@ class _FOVSelectorWidget(QWidget):
 
     def _on_radiobutton_toggled(self, radio_btn: QRadioButton) -> None:
         """Update the scene when the tab is changed."""
-        self.well_view.clear(_WellAreaGraphicsItem, _FOVGraphicsItem, QGraphicsLineItem)
+        self.well_view.clear(WellAreaGraphicsItem, FOVGraphicsItem, QGraphicsLineItem)
         self._enable_radio_buttons_wdgs()
         self._update_scene()
 
@@ -239,7 +235,7 @@ class _FOVSelectorWidget(QWidget):
             self.MODE[btn.objectName()].setEnabled(btn.isChecked())
 
     def _on_value_changed(self, value: RandomPoints | GridRowsColumns) -> None:
-        self.well_view.clear(_WellAreaGraphicsItem, _FOVGraphicsItem, QGraphicsLineItem)
+        self.well_view.clear(WellAreaGraphicsItem, FOVGraphicsItem, QGraphicsLineItem)
         view_data = self.well_view.value().replace(mode=value)
         self.well_view.setValue(view_data)
         self.valueChanged.emit(self.value())

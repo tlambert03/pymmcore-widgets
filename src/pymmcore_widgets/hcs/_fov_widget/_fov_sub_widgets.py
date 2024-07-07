@@ -13,7 +13,6 @@ from qtpy.QtWidgets import (
     QGraphicsScene,
     QGroupBox,
     QLabel,
-    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
@@ -23,21 +22,14 @@ from useq._grid import Shape
 from pymmcore_widgets.hcs._graphics_items import (
     FOV,
     GREEN,
-    _FOVGraphicsItem,
-    _WellAreaGraphicsItem,
+    FOVGraphicsItem,
+    WellAreaGraphicsItem,
 )
-from pymmcore_widgets.hcs._util import _ResizingGraphicsView
+from pymmcore_widgets.hcs._util import ResizingGraphicsView
 
 from ._util import nearest_neighbor
 
-AlignCenter = Qt.AlignmentFlag.AlignCenter
-FIXED_POLICY = (QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-DEFAULT_VIEW_SIZE = (300, 300)  # px
-DEFAULT_WELL_SIZE = (10, 10)  # mm
-DEFAULT_FOV_SIZE = (DEFAULT_WELL_SIZE[0] / 10, DEFAULT_WELL_SIZE[1] / 10)  # mm
 PEN_WIDTH = 4
-RECT = Shape.RECTANGLE
-ELLIPSE = Shape.ELLIPSE
 PEN_AREA = QPen(QColor(GREEN))
 PEN_AREA.setWidth(PEN_WIDTH)
 
@@ -57,7 +49,7 @@ class Center(Position):
     fov_height: Optional[float] = None  # noqa: UP007
 
 
-class _CenterFOVWidget(QGroupBox):
+class CenterFOVWidget(QGroupBox):
     """Widget to select the center of a specifiied area."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -70,7 +62,7 @@ class _CenterFOVWidget(QGroupBox):
 
         lbl = QLabel(text="Center of the Well.")
         lbl.setStyleSheet("font-weight: bold;")
-        lbl.setAlignment(AlignCenter)
+        lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # main
         main_layout = QVBoxLayout(self)
@@ -101,7 +93,7 @@ class _CenterFOVWidget(QGroupBox):
 
 
 @dataclass
-class _WellViewData:
+class WellViewData:
     """A NamedTuple to store the well view data.
 
     Attributes
@@ -126,9 +118,9 @@ class _WellViewData:
     show_fovs_order: bool = True
     mode: Center | GridRowsColumns | RandomPoints | None = None
 
-    def replace(self, **kwargs: Any) -> _WellViewData:
+    def replace(self, **kwargs: Any) -> WellViewData:
         """Replace the attributes of the dataclass."""
-        return _WellViewData(
+        return WellViewData(
             well_size=kwargs.get("well_size", self.well_size),
             circular=kwargs.get("circular", self.circular),
             padding=kwargs.get("padding", self.padding),
@@ -137,10 +129,7 @@ class _WellViewData:
         )
 
 
-DEFAULT_WELL_DATA = _WellViewData()
-
-
-class _WellView(_ResizingGraphicsView):
+class WellView(ResizingGraphicsView):
     """Graphics view to draw a well and the FOVs.
 
     Parameters
@@ -165,9 +154,12 @@ class _WellView(_ResizingGraphicsView):
     def __init__(
         self,
         parent: QWidget | None = None,
-        view_size: tuple[int, int] = DEFAULT_VIEW_SIZE,
-        data: _WellViewData = DEFAULT_WELL_DATA,
+        view_size: tuple[int, int] = (300, 300),
+        data: WellViewData | None = None,
     ) -> None:
+        if data is None:
+            data = WellViewData()
+
         self._scene = QGraphicsScene()
         super().__init__(self._scene, parent)
 
@@ -221,7 +213,9 @@ class _WellView(_ResizingGraphicsView):
         self._is_circular = is_circular
         # update the mode fov size if a mode is set
         if self._mode is not None and isinstance(self._mode, RandomPoints):
-            self._mode = self._mode.replace(shape=ELLIPSE if is_circular else RECT)
+            self._mode = self._mode.replace(
+                shape=Shape.ELLIPSE if is_circular else Shape.RECTANGLE
+            )
 
     def isCircular(self) -> bool:
         """Return True if the well is circular."""
@@ -260,9 +254,9 @@ class _WellView(_ResizingGraphicsView):
         if self._mode is not None:
             self._update_scene(self._mode)
 
-    def value(self) -> _WellViewData:
+    def value(self) -> WellViewData:
         """Return the value of the scene."""
-        return _WellViewData(
+        return WellViewData(
             well_size=(self._well_width, self._well_height),
             circular=self._is_circular,
             padding=self._padding,
@@ -270,7 +264,7 @@ class _WellView(_ResizingGraphicsView):
             mode=self._mode,
         )
 
-    def setValue(self, value: _WellViewData) -> None:
+    def setValue(self, value: WellViewData) -> None:
         """Set the value of the scene."""
         self.clear()
 
@@ -331,7 +325,7 @@ class _WellView(_ResizingGraphicsView):
     ) -> None:
         """Update the scene with the given mode."""
         if value is None:
-            self.clear(_WellAreaGraphicsItem, _FOVGraphicsItem)
+            self.clear(WellAreaGraphicsItem, FOVGraphicsItem)
             return
 
         if isinstance(value, Center):
@@ -350,10 +344,10 @@ class _WellView(_ResizingGraphicsView):
 
     def _update_random_fovs(self, value: RandomPoints) -> None:
         """Update the scene with the random points."""
-        self.clear(_WellAreaGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem)
+        self.clear(WellAreaGraphicsItem, QGraphicsEllipseItem, QGraphicsRectItem)
 
         if isinstance(value, RandomPoints):
-            self._is_circular = value.shape == ELLIPSE
+            self._is_circular = value.shape == Shape.ELLIPSE
 
         # get the well area in scene pixel
         ref_area = self._get_reference_well_area()
@@ -369,7 +363,7 @@ class _WellView(_ResizingGraphicsView):
         y = ref_area.center().y() - (well_area_y_px / 2)
 
         rect = QRectF(x, y, well_area_x_px, well_area_y_px)
-        area = _WellAreaGraphicsItem(rect, self._is_circular, PEN_WIDTH)
+        area = WellAreaGraphicsItem(rect, self._is_circular, PEN_WIDTH)
 
         # draw well and well area
         self._draw_well_area()
@@ -446,14 +440,14 @@ class _WellView(_ResizingGraphicsView):
             pen.setWidth(3)
             return pen
 
-        self.clear(_FOVGraphicsItem, QGraphicsLineItem)
+        self.clear(FOVGraphicsItem, QGraphicsLineItem)
 
         line_pen = QPen(Qt.GlobalColor.black)
         line_pen.setWidth(2)
 
         x = y = None
         for index, fov in enumerate(points):
-            fovs = _FOVGraphicsItem(
+            fovs = FOVGraphicsItem(
                 fov.x,
                 fov.y,
                 self._fov_width_px,

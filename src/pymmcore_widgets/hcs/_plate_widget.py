@@ -1,38 +1,25 @@
 from __future__ import annotations
 
 from itertools import product
-from typing import TYPE_CHECKING
-
-from qtpy.QtCore import QRectF, Qt
-from qtpy.QtWidgets import (
-    QGraphicsScene,
-    QGraphicsView,
-    QWidget,
-)
-from useq import WellPlate
-
-from ._graphics_items import _WellGraphicsItem
-
-if TYPE_CHECKING:
-    from qtpy.QtGui import QBrush, QPen
-
-    from ._graphics_items import Well
-
-
 from typing import TYPE_CHECKING, NamedTuple
 
-from qtpy.QtCore import Signal
+from qtpy.QtCore import QRectF, Qt, Signal
 from qtpy.QtGui import QBrush, QPen
 from qtpy.QtWidgets import (
     QComboBox,
+    QGraphicsScene,
+    QGraphicsView,
     QHBoxLayout,
     QLabel,
     QPushButton,
     QVBoxLayout,
+    QWidget,
 )
+from useq import WellPlate
 
-from ._plate_graphics_scene import _PlateGraphicsScene
-from ._util import PLATES, _ResizingGraphicsView
+from ._graphics_items import WellGraphicsItem
+from ._plate_graphics_scene import PlateGraphicsScene
+from ._util import PLATES, ResizingGraphicsView
 
 if TYPE_CHECKING:
     from useq import WellPlate
@@ -60,7 +47,7 @@ class PlateInfo(NamedTuple):
     wells: list[Well]
 
 
-class _PlateSelectorWidget(QWidget):
+class PlateSelectorWidget(QWidget):
     """Widget for selecting the well plate and its wells.
 
     Parameters
@@ -93,8 +80,8 @@ class _PlateSelectorWidget(QWidget):
         top_layout.addWidget(self.plate_combo, 1)
         top_layout.addWidget(self._clear_button, 0)
 
-        self.scene = _PlateGraphicsScene(parent=self)
-        self.view = _ResizingGraphicsView(self.scene, self)
+        self.scene = PlateGraphicsScene(parent=self)
+        self.view = ResizingGraphicsView(self.scene, self)
         self.view.setStyleSheet("background:grey; border-radius: 5px;")
         self.view.setMinimumHeight(PLATE_GRAPHICS_VIEW_HEIGHT)
         self.view.setMinimumWidth(int(PLATE_GRAPHICS_VIEW_HEIGHT * 1.5))
@@ -160,7 +147,7 @@ class _PlateSelectorWidget(QWidget):
         self.valueChanged.emit(self.value())
 
 
-# not making a _PlateSelectorWidget or _PlateGraphicsScene because I will use it for
+# not making a PlateSelectorWidget or PlateGraphicsScene because I will use it for
 # the database widget as well
 def draw_plate(
     view: QGraphicsView,
@@ -212,7 +199,7 @@ def draw_plate(
         _x = (well_width * col) + (dx_px * col)
         _y = (well_height * row) + (dy_px * row)
         rect = QRectF(_x, _y, well_width, well_height)
-        w = _WellGraphicsItem(rect, row, col, plate.circular_wells, text_size)
+        w = WellGraphicsItem(rect, row, col, plate.circular_wells, text_size)
         w.brush = brush
         w.pen = pen
         w.setOpacity(opacity)

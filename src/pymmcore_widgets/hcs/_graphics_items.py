@@ -12,7 +12,6 @@ RED = "#C33"  # "#FF00FF"
 POINT_SIZE = 3
 DEFAULT_PEN = QPen(Qt.GlobalColor.white)
 DEFAULT_PEN.setWidth(3)
-DEFAULT_BRUSH = QBrush(Qt.GlobalColor.white)
 
 
 class Well(NamedTuple):
@@ -51,7 +50,7 @@ class FOV(NamedTuple):
     bounding_rect: QRectF
 
 
-class _WellGraphicsItem(QGraphicsItem):
+class WellGraphicsItem(QGraphicsItem):
     """QGraphicsItem to draw a well of a plate."""
 
     def __init__(
@@ -144,7 +143,7 @@ class _WellGraphicsItem(QGraphicsItem):
         return name
 
 
-class _WellAreaGraphicsItem(QGraphicsItem):
+class WellAreaGraphicsItem(QGraphicsItem):
     """QGraphicsItem to draw the single well area for the _SelectFOV widget."""
 
     def __init__(self, rect: QRectF, circular: bool, pen_width: int) -> None:
@@ -168,7 +167,7 @@ class _WellAreaGraphicsItem(QGraphicsItem):
             painter.drawRect(self._rect)
 
 
-class _FOVGraphicsItem(QGraphicsItem):
+class FOVGraphicsItem(QGraphicsItem):
     """QGraphicsItem to draw the the positions of each FOV in the _SelectFOV widget.
 
     The FOV is drawn as a rectangle which represents the camera FOV.

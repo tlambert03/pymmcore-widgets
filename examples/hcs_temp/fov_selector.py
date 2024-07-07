@@ -4,16 +4,15 @@ with suppress(ImportError):
     pass
 
 from qtpy.QtWidgets import QApplication
-from useq import WellPlate
+from useq import RelativePosition, WellPlate
 
 from pymmcore_widgets.hcs._fov_widget import FOVSelectorWidget
-from pymmcore_widgets.hcs._fov_widget._fov_sub_widgets import Center
 
 app = QApplication([])
 
 plate = WellPlate(rows=8, columns=12, well_spacing=(9, 9), well_size=(6.4, 6.4))
 fs = FOVSelectorWidget(
-    plate=plate, mode=Center(x=0, y=0, fov_width=512, fov_height=512)
+    plate=plate, mode=RelativePosition(fov_width=512, fov_height=512)
 )
 
 fs.valueChanged.connect(print)

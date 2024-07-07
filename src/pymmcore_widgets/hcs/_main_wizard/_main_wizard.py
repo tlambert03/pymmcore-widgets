@@ -11,7 +11,6 @@ from superqt.utils import signals_blocked
 from useq import RandomPoints, RelativePosition, WellPlatePlan
 
 from pymmcore_widgets.hcs._calibration_widget import CalibrationData
-from pymmcore_widgets.hcs._fov_widget._fov_sub_widgets import Center
 from pymmcore_widgets.hcs._graphics_items import Well
 from pymmcore_widgets.hcs._plate_widget import PlateInfo
 
@@ -25,7 +24,7 @@ class HCSWizard(QWizard):
     """A wizard to setup an High Content experiment.
 
     This widget can be used to select a plate, calibrate it, and then select the FOVs
-    to image in different modes (Center, RandomPoint or GridRowsColumns).
+    to image in different modes (RelativePosition, RandomPoint or GridRowsColumns).
 
     Parameters
     ----------
@@ -130,11 +129,7 @@ class HCSWizard(QWizard):
             plate=self._plate,
             a1_center_xy=calibration.a1_center_xy,
             rotation=calibration.rotation,
-            well_points_plan=(
-                RelativePosition(x=mode.x, y=mode.y)
-                if isinstance(mode, Center)
-                else mode
-            ),
+            well_points_plan=mode,
             selected_wells=(all_rows, all_columns),
         )
 
@@ -167,7 +162,7 @@ class HCSWizard(QWizard):
 
         if isinstance(mode, RelativePosition):
             fov_width, fov_height = self._get_fov_size()
-            mode = Center(
+            mode = RelativePosition(
                 x=mode.x, y=mode.y, fov_width=fov_width, fov_height=fov_height
             )
 
@@ -194,7 +189,7 @@ class HCSWizard(QWizard):
         self._plate = self.plate_page.value().plate
         self.calibration_page.setValue(CalibrationData(plate=self._plate))
         fov_w, fov_h = self._get_fov_size()
-        mode = Center(x=0, y=0, fov_width=fov_w, fov_height=fov_h)
+        mode = RelativePosition(x=0, y=0, fov_width=fov_w, fov_height=fov_h)
         self.fov_page.setValue(self._plate, mode)
 
     def _on_plate_changed(self, value: PlateInfo) -> None:
@@ -218,18 +213,20 @@ class HCSWizard(QWizard):
         if fov_plate != plate:
             fov_w, fov_h = self._get_fov_size()
             if mode is None:
-                mode = Center(x=0, y=0, fov_width=fov_w, fov_height=fov_h)
+                mode = RelativePosition(x=0, y=0, fov_width=fov_w, fov_height=fov_h)
             elif isinstance(mode, RandomPoints):
                 max_width, max_height = plate.well_size
                 # update the max_width and max_height with the new plate well size
-                mode = mode.replace(
-                    fov_height=fov_h,
-                    fov_width=fov_w,
-                    max_height=max_height * 1000,  # convert to um
-                    max_width=max_width * 1000,  # convert to um
+                mode = mode.model_copy(
+                    update={
+                        "fov_height": fov_h,
+                        "fov_width": fov_w,
+                        "max_height": max_height * 1000,  # convert to um
+                        "max_width": max_width * 1000,  # convert to um
+                    }
                 )
             else:
-                mode = mode.replace(fov_height=fov_h, fov_width=fov_w)
+                mode = mode.model_copy(update={"fov_height": fov_h, "fov_width": fov_w})
             self.fov_page.setValue(self._plate, mode)
 
     def _on_sys_config_loaded(self) -> None:
@@ -246,7 +243,7 @@ class HCSWizard(QWizard):
         # update the mode with the new fov size
         if mode is not None:
             fov_w, fov_h = self._get_fov_size()
-            mode = mode.replace(fov_width=fov_w, fov_height=fov_h)
+            mode = mode.model_copy(update={"fov_width": fov_w, "fov_height": fov_h})
 
         # update the fov_page with the fov size
         self.fov_page.setValue(plate, mode)

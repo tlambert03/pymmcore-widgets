@@ -14,20 +14,16 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 from superqt.utils import signals_blocked
-from useq import (
-    GridRowsColumns,
-    RandomPoints,
+from useq import GridRowsColumns, RandomPoints, RelativeMultiPointPlan, RelativePosition
+
+from pymmcore_widgets._util import SeparatorWidget
+from pymmcore_widgets.hcs._graphics_items import FOVGraphicsItem, WellAreaGraphicsItem
+from pymmcore_widgets.useq_widgets.points_plans import (
+    GridRowColumnWidget,
+    RandomPointWidget,
 )
 
-from pymmcore_widgets.hcs._graphics_items import (
-    FOVGraphicsItem,
-    WellAreaGraphicsItem,
-)
-from pymmcore_widgets.useq_widgets._grid import _SeparatorWidget
-from pymmcore_widgets.useq_widgets._grid_row_column_widget import GridRowColumnWidget
-from pymmcore_widgets.useq_widgets._random_points_widget import RandomPointWidget
-
-from ._fov_sub_widgets import Center, CenterFOVWidget, WellView, WellViewData
+from ._fov_sub_widgets import SingleFOVWidget, WellView, WellViewData
 
 if TYPE_CHECKING:
     from useq import WellPlate
@@ -49,7 +45,7 @@ class FOVSelectorWidget(QWidget):
     def __init__(
         self,
         plate: WellPlate | None = None,
-        mode: Center | RandomPoints | GridRowsColumns | None = None,
+        mode: RelativeMultiPointPlan | None = None,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent=parent)
@@ -60,7 +56,7 @@ class FOVSelectorWidget(QWidget):
         self.well_view = WellView()
 
         # centerwidget
-        self.center_wdg = CenterFOVWidget()
+        self.center_wdg = SingleFOVWidget()
         self.center_radio_btn = QRadioButton()
         self.center_radio_btn.setChecked(True)
         self.center_radio_btn.setSizePolicy(*FIXED_POLICY)
@@ -98,7 +94,7 @@ class FOVSelectorWidget(QWidget):
         self._mode_btn_group.addButton(self.random_radio_btn)
         self._mode_btn_group.addButton(self.grid_radio_btn)
         self.MODE: dict[
-            str, CenterFOVWidget | RandomPointWidget | GridRowColumnWidget
+            str, SingleFOVWidget | RandomPointWidget | GridRowColumnWidget
         ] = {
             CENTER: self.center_wdg,
             RANDOM: self.random_wdg,
@@ -110,13 +106,13 @@ class FOVSelectorWidget(QWidget):
         main_layout = QGridLayout(self)
         main_layout.setSpacing(10)
         main_layout.setContentsMargins(10, 10, 10, 10)
-        main_layout.addWidget(_SeparatorWidget(), 0, 0)
+        main_layout.addWidget(SeparatorWidget(), 0, 0)
         main_layout.addLayout(center_wdg_layout, 1, 0)
-        main_layout.addWidget(_SeparatorWidget(), 2, 0)
+        main_layout.addWidget(SeparatorWidget(), 2, 0)
         main_layout.addLayout(random_wdg_layout, 3, 0)
-        main_layout.addWidget(_SeparatorWidget(), 4, 0)
+        main_layout.addWidget(SeparatorWidget(), 4, 0)
         main_layout.addLayout(grid_wdg_layout, 5, 0)
-        main_layout.addWidget(_SeparatorWidget(), 6, 0)
+        main_layout.addWidget(SeparatorWidget(), 6, 0)
         main_layout.addWidget(self.well_view, 0, 1, 7, 1)
 
         # connect
@@ -130,13 +126,13 @@ class FOVSelectorWidget(QWidget):
 
     def value(
         self,
-    ) -> tuple[WellPlate | None, Center | RandomPoints | GridRowsColumns | None]:
+    ) -> tuple[WellPlate | None, RelativeMultiPointPlan | None]:
         return self._plate, self._get_mode_widget().value()
 
     def setValue(
         self,
         plate: WellPlate | None,
-        mode: Center | RandomPoints | GridRowsColumns | None,
+        mode: RelativeMultiPointPlan | None,
     ) -> None:
         """Set the value of the widget.
 
@@ -144,7 +140,7 @@ class FOVSelectorWidget(QWidget):
         ----------
         plate : WellPlate | None
             The well plate object.
-        mode : Center | RandomPoints | GridRowsColumns
+        mode : RelativeMultiPointPlan
             The mode to use to select the FOVs.
         """
         self.well_view.clear()
@@ -185,7 +181,7 @@ class FOVSelectorWidget(QWidget):
 
     def _get_mode_widget(
         self,
-    ) -> CenterFOVWidget | RandomPointWidget | GridRowColumnWidget:
+    ) -> SingleFOVWidget | RandomPointWidget | GridRowColumnWidget:
         """Return the current mode."""
         for btn in self._mode_btn_group.buttons():
             if btn.isChecked():
@@ -194,17 +190,17 @@ class FOVSelectorWidget(QWidget):
         raise ValueError("No mode selected.")
 
     def _update_mode_widgets(
-        self, mode: Center | RandomPoints | GridRowsColumns | None
+        self, mode: RelativePosition | RandomPoints | GridRowsColumns | None
     ) -> None:
         """Update the mode widgets."""
         if isinstance(mode, RandomPoints):
             self._set_random_value(mode)
         else:
-            # update the randon widget values depending on the plate
+            # update the random widget values depending on the plate
             with signals_blocked(self.random_wdg):
                 self.random_wdg.setValue(self._plate_to_random(self._plate))
             # update center or grid widgets
-            if isinstance(mode, Center):
+            if isinstance(mode, RelativePosition):
                 self._set_center_value(mode)
             elif isinstance(mode, GridRowsColumns):
                 self._set_grid_value(mode)
@@ -246,7 +242,7 @@ class FOVSelectorWidget(QWidget):
         view_data = self.well_view.value().replace(mode=mode)
         self.well_view.setValue(view_data)
 
-    def _set_center_value(self, mode: Center) -> None:
+    def _set_center_value(self, mode: RelativePosition) -> None:
         """Set the center widget values."""
         self.center_radio_btn.setChecked(True)
         self.center_wdg.setValue(mode)
@@ -279,9 +275,11 @@ class FOVSelectorWidget(QWidget):
         # well_size is in mm, convert to µm
         well_size_x, well_size_y = self._plate.well_size
         if mode.max_width > well_size_x * 1000 or mode.max_height > well_size_y * 1000:
-            mode = mode.replace(
-                max_width=well_size_x * 1000,
-                max_height=well_size_y * 1000,
+            mode = mode.model_copy(
+                update={
+                    "max_width": well_size_x * 1000,
+                    "max_height": well_size_y * 1000,
+                }
             )
             warnings.warn(
                 "RandomPoints `max_width` and/or `max_height` are larger than "

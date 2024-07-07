@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 import numpy as np
 from qtpy.QtCore import QRect, QRectF, Qt, Signal
 from qtpy.QtGui import QBrush, QColor, QTransform
 from qtpy.QtWidgets import (
-    QGraphicsItem,
     QGraphicsScene,
     QGraphicsSceneMouseEvent,
     QRubberBand,
@@ -34,7 +33,11 @@ class PlateGraphicsScene(QGraphicsScene):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
-        self._selected_wells: list[QGraphicsItem] = []
+        self._selected_wells: list[WellGraphicsItem] = []
+
+    if TYPE_CHECKING:
+
+        def items(self, pos: QRectF | None = None) -> list[WellGraphicsItem]: ...
 
     def mousePressEvent(self, event: QGraphicsSceneMouseEvent) -> None:
         # origin point of the SCREEN
@@ -50,13 +53,11 @@ class PlateGraphicsScene(QGraphicsScene):
         # set the color of the selected wells to SELECTED_COLOR if they are within the
         # selection
         for item in self._selected_wells:
-            item = cast("_WellGraphicsItem", item)
             item.brush = SELECTED_COLOR
 
         # if there is an item where the mouse is pressed and it is selected, deselect,
         # otherwise select it.
         if well := self.itemAt(self.scene_origin_point, QTransform()):
-            well = cast("_WellGraphicsItem", well)
             if well.isSelected():
                 well.brush = UNSELECTED_COLOR
                 well.setSelected(False)
@@ -75,8 +76,6 @@ class PlateGraphicsScene(QGraphicsScene):
         # the selection or deselect them if they are not (or if the shift key is pressed
         # while moving the movuse).
         for item in self.items():
-            item = cast("_WellGraphicsItem", item)
-
             if item in selection:
                 # if pressing shift, remove from selection
                 if event.modifiers() and Qt.KeyboardModifier.ShiftModifier:
@@ -99,7 +98,6 @@ class PlateGraphicsScene(QGraphicsScene):
     def _clear_selection(self) -> None:
         """Clear the selection of all wells."""
         for item in self.items():
-            item = cast("_WellGraphicsItem", item)
             # if item.isSelected():
             item.setSelected(False)
             item.brush = UNSELECTED_COLOR
@@ -110,7 +108,6 @@ class PlateGraphicsScene(QGraphicsScene):
         self._clear_selection()
 
         for item in self.items():
-            item = cast("_WellGraphicsItem", item)
             if item.value() in value:
                 self._set_selected(item, True)
         self.valueChanged.emit()

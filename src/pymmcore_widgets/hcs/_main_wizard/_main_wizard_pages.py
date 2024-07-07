@@ -20,9 +20,8 @@ from pymmcore_widgets.hcs._plate_widget import PlateInfo, PlateSelectorWidget
 
 if TYPE_CHECKING:
     from pymmcore_plus import CMMCorePlus
-    from useq import GridRowsColumns, RandomPoints, WellPlate
+    from useq import RelativeMultiPointPlan, WellPlate
 
-    from pymmcore_widgets.hcs._fov_widget._fov_sub_widgets import Center
 
 EXPANDING = (QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
@@ -98,7 +97,7 @@ class FOVSelectorPage(QWizardPage):
         self,
         parent: QWidget | None = None,
         plate: WellPlate | None = None,
-        mode: Center | RandomPoints | GridRowsColumns | None = None,
+        mode: RelativeMultiPointPlan | None = None,
     ) -> None:
         super().__init__(parent)
         self.setTitle("Field of View Selection")
@@ -114,14 +113,14 @@ class FOVSelectorPage(QWizardPage):
 
     def value(
         self,
-    ) -> tuple[WellPlate | None, Center | RandomPoints | GridRowsColumns | None]:
+    ) -> tuple[WellPlate | None, RelativeMultiPointPlan | None]:
         """Return the list of FOVs."""
         return self._fov_widget.value()
 
     def setValue(
         self,
         plate: WellPlate | None,
-        mode: Center | RandomPoints | GridRowsColumns | None,
+        mode: RelativeMultiPointPlan | None,
     ) -> None:
         """Set the list of FOVs."""
         self._fov_widget.setValue(plate, mode)

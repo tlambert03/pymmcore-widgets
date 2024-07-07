@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import warnings
-from dataclasses import dataclass
-from typing import Any, Optional
+from dataclasses import asdict, dataclass
+from typing import Any
 
 from qtpy.QtCore import QRectF, Qt, Signal
 from qtpy.QtGui import QColor, QPen
@@ -16,8 +16,7 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from useq import GridRowsColumns, RandomPoints, RelativePosition
-from useq import Position as AbsolutePosition
+from useq import GridRowsColumns, RandomPoints, RelativeMultiPointPlan, RelativePosition
 from useq._grid import Shape
 
 from pymmcore_widgets.hcs._graphics_items import (
@@ -35,23 +34,8 @@ PEN_AREA = QPen(QColor(GREEN))
 PEN_AREA.setWidth(PEN_WIDTH)
 
 
-class Center(AbsolutePosition):
-    """A subclass of GridRowsColumns to store the center coordinates and FOV size.
-
-    Attributes
-    ----------
-    fov_width : float | None
-        The width of the FOV in µm.
-    fov_height : float | None
-        The height of the FOV in µm.
-    """
-
-    fov_width: Optional[float] = None  # noqa: UP007
-    fov_height: Optional[float] = None  # noqa: UP007
-
-
-class CenterFOVWidget(QGroupBox):
-    """Widget to select the center of a specified area."""
+class SingleFOVWidget(QGroupBox):
+    """Widget to select a single point of a specified area."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -81,12 +65,12 @@ class CenterFOVWidget(QGroupBox):
         """Set the FOV size."""
         self._fov_size = size
 
-    def value(self) -> Center:
+    def value(self) -> RelativePosition:
         """Return the values of the widgets."""
         fov_x, fov_y = self._fov_size
-        return Center(x=self._x, y=self._y, fov_width=fov_x, fov_height=fov_y)
+        return RelativePosition(x=self._x, y=self._y, fov_width=fov_x, fov_height=fov_y)
 
-    def setValue(self, value: Center) -> None:
+    def setValue(self, value: RelativePosition) -> None:
         """Set the values of the widgets."""
         self._x = value.x or 0.0
         self._y = value.y or 0.0
@@ -109,7 +93,7 @@ class WellViewData:
         If True, the FOVs will be connected by black lines to represent the order of
         acquisition. In addition, the first FOV will be drawn with a black color, the
         others with a white color. By default, True.
-    mode : Center | GridRowsColumns | RandomPoints | None
+    mode : RelativePosition | GridRowsColumns | RandomPoints | None
         The mode to use to draw the FOVs. By default, None.
     """
 
@@ -117,17 +101,11 @@ class WellViewData:
     circular: bool = False
     padding: int = 0
     show_fovs_order: bool = True
-    mode: Center | GridRowsColumns | RandomPoints | None = None
+    mode: RelativeMultiPointPlan | None = None
 
     def replace(self, **kwargs: Any) -> WellViewData:
         """Replace the attributes of the dataclass."""
-        return WellViewData(
-            well_size=kwargs.get("well_size", self.well_size),
-            circular=kwargs.get("circular", self.circular),
-            padding=kwargs.get("padding", self.padding),
-            show_fovs_order=kwargs.get("show_fovs_order", self.show_fovs_order),
-            mode=kwargs.get("mode", self.mode),
-        )
+        return WellViewData(**{**asdict(self), **kwargs})
 
 
 class WellView(ResizingGraphicsView):
@@ -178,7 +156,9 @@ class WellView(ResizingGraphicsView):
 
     # _________________________PUBLIC METHODS_________________________ #
 
-    def setMode(self, mode: Center | GridRowsColumns | RandomPoints | None) -> None:
+    def setMode(
+        self, mode: RelativePosition | GridRowsColumns | RandomPoints | None
+    ) -> None:
         """Set the mode to use to draw the FOVs."""
         self._mode = mode
         self._fov_width = mode.fov_width if mode else None
@@ -197,7 +177,7 @@ class WellView(ResizingGraphicsView):
         )
         self._update_scene(self._mode)
 
-    def mode(self) -> Center | GridRowsColumns | RandomPoints | None:
+    def mode(self) -> RelativePosition | GridRowsColumns | RandomPoints | None:
         """Return the mode to use to draw the FOVs."""
         return self._mode
 
@@ -214,8 +194,8 @@ class WellView(ResizingGraphicsView):
         self._is_circular = is_circular
         # update the mode fov size if a mode is set
         if self._mode is not None and isinstance(self._mode, RandomPoints):
-            self._mode = self._mode.replace(
-                shape=Shape.ELLIPSE if is_circular else Shape.RECTANGLE
+            self._mode = self._mode.model_copy(
+                update={"shape": Shape.ELLIPSE if is_circular else Shape.RECTANGLE}
             )
 
     def isCircular(self) -> bool:
@@ -322,14 +302,14 @@ class WellView(ResizingGraphicsView):
             self._scene.addRect(ref, pen=PEN_AREA)
 
     def _update_scene(
-        self, value: Center | GridRowsColumns | RandomPoints | None
+        self, value: RelativePosition | GridRowsColumns | RandomPoints | None
     ) -> None:
         """Update the scene with the given mode."""
         if value is None:
             self.clear(WellAreaGraphicsItem, FOVGraphicsItem)
             return
 
-        if isinstance(value, Center):
+        if isinstance(value, RelativePosition):
             self._update_center_fov(value)
         elif isinstance(value, RandomPoints):
             self._update_random_fovs(value)
@@ -338,7 +318,7 @@ class WellView(ResizingGraphicsView):
         else:
             raise ValueError(f"Invalid value: {value}")
 
-    def _update_center_fov(self, value: Center) -> None:
+    def _update_center_fov(self, value: RelativePosition) -> None:
         """Update the scene with the center point."""
         points = [FOV(value.x or 0.0, value.y or 0.0, self.sceneRect())]
         self._draw_fovs(points)
@@ -370,11 +350,13 @@ class WellView(ResizingGraphicsView):
         self._draw_well_area()
         self._scene.addItem(area)
 
-        val = value.replace(
-            max_width=area.boundingRect().width(),
-            max_height=area.boundingRect().height(),
-            fov_width=self._fov_width_px,
-            fov_height=self._fov_height_px,
+        val = value.model_copy(
+            update={
+                "max_width": area.boundingRect().width(),
+                "max_height": area.boundingRect().height(),
+                "fov_width": self._fov_width_px,
+                "fov_height": self._fov_height_px,
+            }
         )
         # get the random points list
 
@@ -389,22 +371,24 @@ class WellView(ResizingGraphicsView):
         with warnings.catch_warnings(record=True) as w:
             # note: inverting the y axis because in scene, y up is negative and y down
             # is positive.
-            pos = [
-                RelativePosition(x=point.x, y=point.y * (-1), name=point.name)  # type: ignore
+            _points = [
+                RelativePosition(x=point.x, y=-point.y, name=point.name)  # type: ignore [attr-defined]
                 for point in points
             ]
-            if len(pos) != points.num_points:
-                self.pointsWarning.emit(len(pos))
+            if len(_points) != points.num_points:
+                self.pointsWarning.emit(len(_points))
 
         if len(w):
             warnings.warn(w[0].message, w[0].category, stacklevel=2)
 
         top_x, top_y = area.topLeft().x(), area.topLeft().y()
-        return [FOV(p.x, p.y, area) for p in nearest_neighbor(pos, top_x, top_y)]
+        return [FOV(p.x, p.y, area) for p in nearest_neighbor(_points, top_x, top_y)]
 
     def _update_grid_fovs(self, value: GridRowsColumns) -> None:
         """Update the scene with the grid points."""
-        val = value.replace(fov_width=self._fov_width_px, fov_height=self._fov_width_px)
+        val = value.model_copy(
+            update={"fov_width": self._fov_width_px, "fov_height": self._fov_width_px}
+        )
 
         # x and y center coords of the scene in px
         x, y = (

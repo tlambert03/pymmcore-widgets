@@ -27,7 +27,7 @@ class GridRowColumnWidget(QGroupBox):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
-        self._fov_size: tuple[float | None, float | None] = (None, None)
+        self.fov_size: tuple[float | None, float | None] = (None, None)
 
         # title
         title = QLabel(text="Fields of Views in a Grid.")
@@ -71,11 +71,11 @@ class GridRowColumnWidget(QGroupBox):
         )
         form_layout.setSpacing(5)
         form_layout.setContentsMargins(0, 0, 0, 0)
-        form_layout.addRow(QLabel("Rows:"), self._rows)
-        form_layout.addRow(QLabel("Columns:"), self._cols)
-        form_layout.addRow(QLabel("Overlap x (%):"), self._overlap_x)
-        form_layout.addRow(QLabel("Overlap y (%):"), self._overlap_y)
-        form_layout.addRow(QLabel("Grid Order:"), self._order_combo)
+        form_layout.addRow("Rows:", self._rows)
+        form_layout.addRow("Columns:", self._cols)
+        form_layout.addRow("Overlap x (%):", self._overlap_x)
+        form_layout.addRow("Overlap y (%):", self._overlap_y)
+        form_layout.addRow("Grid Order:", self._order_combo)
 
         # main
         main_layout = QVBoxLayout(self)
@@ -91,23 +91,13 @@ class GridRowColumnWidget(QGroupBox):
         self._overlap_y.valueChanged.connect(self._on_value_changed)
         self._order_combo.currentTextChanged.connect(self._on_value_changed)
 
-    @property
-    def fov_size(self) -> tuple[float | None, float | None]:
-        """Return the FOV size."""
-        return self._fov_size
-
-    @fov_size.setter
-    def fov_size(self, size: tuple[float | None, float | None]) -> None:
-        """Set the FOV size."""
-        self._fov_size = size
-
     def _on_value_changed(self) -> None:
         """Emit the valueChanged signal."""
         self.valueChanged.emit(self.value())
 
     def value(self) -> GridRowsColumns:
         """Return the values of the widgets."""
-        fov_x, fov_y = self._fov_size
+        fov_x, fov_y = self.fov_size
         return GridRowsColumns(
             rows=self._rows.value(),
             columns=self._cols.value(),
@@ -132,4 +122,4 @@ class GridRowColumnWidget(QGroupBox):
         self._cols.setValue(1)
         self._overlap_x.setValue(0)
         self._overlap_y.setValue(0)
-        self._fov_size = (None, None)
+        self.fov_size = (None, None)

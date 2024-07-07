@@ -11,7 +11,14 @@ from qtpy.QtWidgets import (
     QGraphicsLineItem,
     QGraphicsRectItem,
 )
-from useq import GridRowsColumns, RandomPoints, WellPlate, WellPlatePlan
+from useq import (
+    GridRowsColumns,
+    RandomPoints,
+    RelativeMultiPointPlan,
+    RelativePosition,
+    WellPlate,
+    WellPlatePlan,
+)
 from useq._grid import Shape
 
 from pymmcore_widgets import HCSWizard
@@ -22,20 +29,19 @@ from pymmcore_widgets.hcs._calibration_widget._calibration_sub_widgets import (
     _TestCalibrationWidget,
 )
 from pymmcore_widgets.hcs._calibration_widget._calibration_widget import (
-    Mode,
     CalibrationData,
+    Mode,
     PlateCalibrationWidget,
 )
 from pymmcore_widgets.hcs._fov_widget._fov_sub_widgets import (
-    Center,
-    CenterFOVWidget,
+    SingleFOVWidget,
     WellView,
     WellViewData,
 )
 from pymmcore_widgets.hcs._fov_widget._fov_widget import FOVSelectorWidget
 from pymmcore_widgets.hcs._graphics_items import (
-    Well,
     FOVGraphicsItem,
+    Well,
     WellAreaGraphicsItem,
 )
 from pymmcore_widgets.hcs._plate_widget import (
@@ -43,8 +49,12 @@ from pymmcore_widgets.hcs._plate_widget import (
     PlateSelectorWidget,
 )
 from pymmcore_widgets.hcs._util import PLATES
-from pymmcore_widgets.useq_widgets._grid_row_column_widget import GridRowColumnWidget
-from pymmcore_widgets.useq_widgets._random_points_widget import RandomPointWidget
+from pymmcore_widgets.useq_widgets.points_plans._grid_row_column_widget import (
+    GridRowColumnWidget,
+)
+from pymmcore_widgets.useq_widgets.points_plans._random_points_widget import (
+    RandomPointWidget,
+)
 
 if TYPE_CHECKING:
     from pymmcore_plus import CMMCorePlus
@@ -236,7 +246,7 @@ def test_calibration_widget(global_mmcore: CMMCorePlus, qtbot: QtBot):
 
 
 def test_center_widget(qtbot: QtBot):
-    wdg = CenterFOVWidget()
+    wdg = SingleFOVWidget()
     qtbot.addWidget(wdg)
 
     value = wdg.value()
@@ -249,7 +259,7 @@ def test_center_widget(qtbot: QtBot):
     assert value.fov_width == 5
     assert value.fov_height == 7
 
-    wdg.setValue(Center(x=10, y=20, fov_width=2, fov_height=3))
+    wdg.setValue(RelativePosition(x=10, y=20, fov_width=2, fov_height=3))
 
     value = wdg.value()
     assert value.x == 10
@@ -364,7 +374,7 @@ def get_items_number(wdg: WellView) -> SceneItems:
 
 modes = [
     (
-        Center(x=0, y=0, fov_width=512, fov_height=512),
+        RelativePosition(fov_width=512, fov_height=512),
         SceneItems(fovs=1, lines=0, well_area=0, well_circle=0, well_rect=1),
     ),
     (
@@ -387,8 +397,8 @@ modes = [
 
 @pytest.mark.parametrize(["mode", "items"], modes)
 def test_well_view_widget_value(
-    qtbot: QtBot, mode: Center | GridRowsColumns | RandomPoints, items: SceneItems
-):
+    qtbot: QtBot, mode: RelativeMultiPointPlan, items: SceneItems
+) -> None:
     wdg = WellView()
     qtbot.addWidget(wdg)
     assert wdg.value() == WellViewData()
@@ -409,10 +419,10 @@ def test_well_view_widget_value(
     assert get_items_number(wdg) == items
 
 
-def test_well_view_widget_update(qtbot: QtBot):
+def test_well_view_widget_update(qtbot: QtBot) -> None:
     view_data = WellViewData(
         well_size=(6400, 6400),
-        mode=Center(x=0, y=0, fov_width=512, fov_height=512),
+        mode=RelativePosition(x=0, y=0, fov_width=512, fov_height=512),
     )
     wdg = WellView(data=view_data)
     qtbot.addWidget(wdg)
@@ -458,7 +468,7 @@ def test_fov_selector_widget_none(qtbot: QtBot):
     wdg = FOVSelectorWidget()
     qtbot.addWidget(wdg)
 
-    assert wdg.value() == (None, Center(x=0.0, y=0.0))
+    assert wdg.value() == (None, RelativePosition(x=0.0, y=0.0))
     assert get_items_number(wdg.well_view) == SceneItems(
         fovs=0, lines=0, well_area=0, well_circle=0, well_rect=0
     )
@@ -468,14 +478,14 @@ def test_fov_selector_widget(qtbot: QtBot):
     plate = PLATES["96-well"]
     wdg = FOVSelectorWidget(
         plate=plate,
-        mode=Center(x=0, y=0, fov_width=500, fov_height=500),
+        mode=RelativePosition(x=0, y=0, fov_width=500, fov_height=500),
     )
     qtbot.addWidget(wdg)
 
     # center
     assert wdg.value() == (
         plate,
-        Center(x=0, y=0, fov_width=500, fov_height=500),
+        RelativePosition(x=0, y=0, fov_width=500, fov_height=500),
     )
 
     # grid
@@ -526,10 +536,10 @@ def test_fov_selector_widget(qtbot: QtBot):
         fovs=0, lines=0, well_area=0, well_circle=0, well_rect=1
     )
 
-    wdg.setValue(None, Center(x=0, y=0, fov_width=500, fov_height=500))
+    wdg.setValue(None, RelativePosition(x=0, y=0, fov_width=500, fov_height=500))
     current_plate, mode = wdg.value()
     assert current_plate is None
-    assert mode == Center(x=0, y=0, fov_width=500, fov_height=500)
+    assert mode == RelativePosition(x=0, y=0, fov_width=500, fov_height=500)
     assert mode.fov_width == mode.fov_height == 500
     assert get_items_number(wdg.well_view) == SceneItems(
         fovs=0, lines=0, well_area=0, well_circle=0, well_rect=0

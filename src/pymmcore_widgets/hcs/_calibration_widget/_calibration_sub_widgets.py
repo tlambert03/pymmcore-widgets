@@ -197,7 +197,7 @@ class CalibrationTable(DataTableWidget):
             self.table().setRowData(row, data)
 
 
-class TestCalibrationWidget(QGroupBox):
+class _TestCalibrationWidget(QGroupBox):
     """Widget to test the calibration of a well.
 
     You can select a well and move the XY stage to a random edge point of the well.

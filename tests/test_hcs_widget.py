@@ -19,7 +19,7 @@ from pymmcore_widgets.hcs._calibration_widget._calibration_sub_widgets import (
     ROLE,
     CalibrationModeWidget,
     CalibrationTable,
-    TestCalibrationWidget,
+    _TestCalibrationWidget,
 )
 from pymmcore_widgets.hcs._calibration_widget._calibration_widget import (
     Mode,
@@ -151,7 +151,7 @@ def test_calibration_table_widget(global_mmcore: CMMCorePlus, qtbot: QtBot):
 def test_calibration_move_to_edge_widget(global_mmcore: CMMCorePlus, qtbot: QtBot):
     mmc = global_mmcore
 
-    wdg = TestCalibrationWidget(mmcore=mmc)
+    wdg = _TestCalibrationWidget(mmcore=mmc)
     qtbot.addWidget(wdg)
 
     assert wdg._letter_combo.count() == 0

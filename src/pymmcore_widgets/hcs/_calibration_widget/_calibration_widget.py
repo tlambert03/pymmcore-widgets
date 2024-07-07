@@ -26,7 +26,7 @@ from ._calibration_sub_widgets import (
     CalibrationModeWidget,
     CalibrationTable,
     Mode,
-    TestCalibrationWidget,
+    _TestCalibrationWidget,
 )
 from ._util import (
     apply_rotation_matrix,
@@ -149,7 +149,7 @@ class PlateCalibrationWidget(QWidget):
         table_and_btn_wdg_layout.addWidget(table_group)
         table_and_btn_wdg_layout.addLayout(calibrate_btn_wdg_layout)
         # test calibration and calibration label group
-        self._test_calibration = TestCalibrationWidget()
+        self._test_calibration = _TestCalibrationWidget()
         self._calibration_label = CalibrationLabel()
         bottom_group_layout = QHBoxLayout()
         bottom_group_layout.setSpacing(10)

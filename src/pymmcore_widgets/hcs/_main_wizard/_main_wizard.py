@@ -10,9 +10,7 @@ from qtpy.QtWidgets import QFileDialog, QVBoxLayout, QWidget, QWizard
 from superqt.utils import signals_blocked
 from useq import RandomPoints, RelativePosition, WellPlatePlan
 
-from pymmcore_widgets.hcs._calibration_widget._calibration_widget import (
-    CalibrationData,
-)
+from pymmcore_widgets.hcs._calibration_widget import CalibrationData
 from pymmcore_widgets.hcs._fov_widget._fov_sub_widgets import Center
 from pymmcore_widgets.hcs._graphics_items import Well
 from pymmcore_widgets.hcs._plate_widget import PlateInfo

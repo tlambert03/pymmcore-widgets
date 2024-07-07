@@ -1,12 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import (
-    ClassVar,
-    NamedTuple,
-    Tuple,
-    cast,
-)
+from typing import ClassVar, NamedTuple, Tuple, cast
 
 import numpy as np
 from fonticon_mdi6 import MDI6
@@ -76,6 +71,32 @@ class CalibrationData(NamedTuple):
     calibration_positions_an: ClassVar[list[tuple[float, float]]] = []
 
 
+OnePoint = Mode(
+    "1 points : add 1 points at the center of the well",
+    CIRCLE_CENTER_POINTS,
+    QIcon(str(ICON_PATH / "circle-center.svg")),
+)
+ThreePoints = Mode(
+    "3 points : add 3 points at the edges of the well",
+    CIRCLE_EDGES_POINTS,
+    QIcon(str(ICON_PATH / "circle-edges.svg")),
+)
+TwoPoints = Mode(
+    "2 points : add 2 points at the center of the well",
+    2,
+    QIcon(str(ICON_PATH / "square-vertices.svg")),
+)
+FourPoints = Mode(
+    "4 points : add 4 points at the edges of the well",
+    4,
+    QIcon(str(ICON_PATH / "square-edges.svg")),
+)
+MODES: dict[bool, list[Mode]] = {
+    True: [OnePoint, ThreePoints],
+    False: [TwoPoints, FourPoints],
+}
+
+
 class PlateCalibrationWidget(QWidget):
     """Widget to calibrate the sample plate.
 
@@ -98,38 +119,8 @@ class PlateCalibrationWidget(QWidget):
         super().__init__(parent)
         self._mmc = mmcore or CMMCorePlus.instance()
 
-        self.MODES: dict[bool, list[Mode]] = {
-            True: [
-                Mode(
-                    "1 points : add 1 points at the center of the well",
-                    CIRCLE_CENTER_POINTS,
-                    QIcon(str(ICON_PATH / "circle-center.svg")),
-                ),
-                Mode(
-                    "3 points : add 3 points at the edges of the well",
-                    CIRCLE_EDGES_POINTS,
-                    QIcon(str(ICON_PATH / "circle-edges.svg")),
-                ),
-            ],
-            False: [
-                Mode(
-                    "2 points : add 2 points at the center of the well",
-                    2,
-                    QIcon(str(ICON_PATH / "square-vertices.svg")),
-                ),
-                Mode(
-                    "4 points : add 4 points at the edges of the well",
-                    4,
-                    QIcon(str(ICON_PATH / "square-edges.svg")),
-                ),
-            ],
-        }
-
         self._plate: WellPlate | None = None
-
         self._calibration_data: CalibrationData | None = None
-
-        # calibration mode
         self._calibration_mode = CalibrationModeWidget()
 
         # calibration tables
@@ -195,7 +186,7 @@ class PlateCalibrationWidget(QWidget):
 
         # set calibration mode
         calibration_mode = (
-            self.MODES[self._plate.circular_wells] if self._plate is not None else None
+            MODES[self._plate.circular_wells] if self._plate is not None else None
         )
 
         self._calibration_mode.setValue(calibration_mode)

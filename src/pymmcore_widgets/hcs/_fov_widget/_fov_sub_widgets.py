@@ -16,7 +16,8 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from useq import GridRowsColumns, Position, RandomPoints, RelativePosition
+from useq import GridRowsColumns, RandomPoints, RelativePosition
+from useq import Position as AbsolutePosition
 from useq._grid import Shape
 
 from pymmcore_widgets.hcs._graphics_items import (
@@ -34,7 +35,7 @@ PEN_AREA = QPen(QColor(GREEN))
 PEN_AREA.setWidth(PEN_WIDTH)
 
 
-class Center(Position):
+class Center(AbsolutePosition):
     """A subclass of GridRowsColumns to store the center coordinates and FOV size.
 
     Attributes
@@ -50,7 +51,7 @@ class Center(Position):
 
 
 class CenterFOVWidget(QGroupBox):
-    """Widget to select the center of a specifiied area."""
+    """Widget to select the center of a specified area."""
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)

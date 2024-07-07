@@ -4,7 +4,7 @@ from pymmcore_plus import CMMCorePlus
 from qtpy.QtWidgets import QApplication
 from useq import WellPlate
 
-from pymmcore_widgets.hcs._calibration_widget._calibration_widget import (
+from pymmcore_widgets.hcs._calibration_widget import (
     CalibrationData,
     PlateCalibrationWidget,
 )

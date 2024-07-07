@@ -11,7 +11,7 @@ from qtpy.QtWidgets import (
     QWizardPage,
 )
 
-from pymmcore_widgets.hcs._calibration_widget._calibration_widget import (
+from pymmcore_widgets.hcs._calibration_widget import (
     CalibrationData,
     PlateCalibrationWidget,
 )

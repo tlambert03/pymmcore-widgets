@@ -35,10 +35,10 @@ class WellView(ResizingGraphicsView):
 
         # the scene coordinates are all real-world coordinates, in µm
         # with the origin at the center of the view (0, 0)
-        self._well_width_um: float | None = 6000
-        self._well_height_um: float | None = 6000
-        self._fov_width_um: float = 400
-        self._fov_height_um: float = 340
+        self._well_width_um: float | None = None
+        self._well_height_um: float | None = None
+        self._fov_width_um: float = 0.0
+        self._fov_height_um: float = 0.0
         self._is_circular: bool = False
 
         # the item that draws the outline of the entire well area
@@ -53,6 +53,10 @@ class WellView(ResizingGraphicsView):
 
     def setPointsPlan(self, plan: useq.RelativeMultiPointPlan) -> None:
         """Set the plan to use to draw the FOVs."""
+        if self._well_width_um is None or self._well_height_um is None:
+            self.clear()
+            raise ValueError("Well size must be set before setting the plan.")
+
         plandict = plan.model_dump(exclude_none=True)
         # use our fov values if the plan doesn't have them
         plandict.setdefault("fov_width", self._fov_width_um)
@@ -84,6 +88,15 @@ class WellView(ResizingGraphicsView):
         """Set the well size width and height in mm."""
         self._well_width_um = (width_mm * 1000) if width_mm else None
         self._well_height_um = (height_mm * 1000) if height_mm else None
+
+    def clear(self) -> None:
+        """Clear the scene."""
+        if self._outline_item:
+            self._scene.removeItem(self._outline_item)
+        self._outline_item = None
+        while self._fov_items:
+            self._scene.removeItem(self._fov_items.pop())
+        self._fov_items = []
 
     def _well_rect(self) -> QRectF:
         """Return the QRectF of the well area."""

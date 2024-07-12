@@ -8,7 +8,7 @@ import useq
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QMouseEvent
 
-from pymmcore_widgets.useq_widgets import WellPlateWidget
+from pymmcore_widgets.useq_widgets import WellPlatePlanWidget
 
 if TYPE_CHECKING:
     from pytestqt.qtbot import QtBot
@@ -34,7 +34,7 @@ ROTATED_PLAN = BASIC_PLAN.model_copy(update={"rotation": 10})
 
 @pytest.mark.parametrize("plan", [BASIC_PLAN, ROTATED_PLAN, CUSTOM_PLATE])
 def test_plate_widget(qtbot: QtBot, plan: Any) -> None:
-    wdg = WellPlateWidget(plan)
+    wdg = WellPlatePlanWidget(plan)
     qtbot.addWidget(wdg)
     wdg.show()
     val = wdg.value()
@@ -44,7 +44,7 @@ def test_plate_widget(qtbot: QtBot, plan: Any) -> None:
 
 
 def test_plate_widget_selection(qtbot: QtBot) -> None:
-    wdg = WellPlateWidget()
+    wdg = WellPlatePlanWidget()
     qtbot.addWidget(wdg)
     wdg.show()
     wdg.plate_name.setCurrentText("96-well")
@@ -55,7 +55,7 @@ def test_plate_widget_selection(qtbot: QtBot) -> None:
 
 @pytest.mark.skipif(qtpy.QT5, reason="QMouseEvent API changed")
 def test_plate_mouse_press(qtbot: QtBot) -> None:
-    wdg = WellPlateWidget()
+    wdg = WellPlatePlanWidget()
     qtbot.addWidget(wdg)
     wdg.show()
     wdg.plate_name.setCurrentText("96-well")

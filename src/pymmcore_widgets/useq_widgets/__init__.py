@@ -14,7 +14,7 @@ from ._grid import GridPlanWidget
 from ._mda_sequence import PYMMCW_METADATA_KEY, MDASequenceWidget
 from ._positions import PositionTable
 from ._time import TimePlanWidget
-from ._well_plate_widget import WellPlateWidget
+from ._well_plate_widget import WellPlatePlanWidget
 from ._z import ZPlanWidget
 from .points_plans import PointsPlanWidget
 
@@ -34,6 +34,6 @@ __all__ = [
     "TextColumn",
     "TimeDeltaColumn",
     "TimePlanWidget",
-    "WellPlateWidget",
+    "WellPlatePlanWidget",
     "ZPlanWidget",
 ]

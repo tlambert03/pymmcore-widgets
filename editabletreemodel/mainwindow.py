@@ -2,12 +2,18 @@
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 import sys
-from pathlib import Path
 
 from qtpy.QtCore import QAbstractItemModel, QItemSelectionModel, QModelIndex, Qt, Slot
-from qtpy.QtWidgets import QMainWindow, QTreeView, QWidget
 from qtpy.QtTest import QAbstractItemModelTester
-
+from qtpy.QtWidgets import (
+    QHBoxLayout,
+    QListView,
+    QMainWindow,
+    QTableView,
+    QTreeView,
+    QVBoxLayout,
+    QWidget,
+)
 from treemodel import TreeModel
 
 
@@ -16,10 +22,33 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.resize(573, 468)
 
-        self.view = QTreeView()
-        self.view.setAlternatingRowColors(True)
-        self.view.setAllColumnsShowFocus(True)
-        self.setCentralWidget(self.view)
+        self.model = TreeModel(self)
+
+        self.tree = QTreeView()
+        self.tree.setModel(self.model)
+
+        self.list = QListView()
+        self.list.setModel(self.model)
+
+        self.list2 = QListView()
+        self.list2.setModel(self.model)
+        self.list.selectionModel().currentChanged.connect(self.list2.setRootIndex)
+
+        self.table = QTableView()
+        self.table.setModel(self.model)
+        self.list2.selectionModel().currentChanged.connect(self.table.setRootIndex)
+
+        v = QVBoxLayout()
+        v.addWidget(self.list)
+        v.addWidget(self.list2)
+
+        wdg = QWidget()
+        layout = QHBoxLayout(wdg)
+
+        layout.addWidget(self.tree)
+        layout.addLayout(v)
+        layout.addWidget(self.table)
+        self.setCentralWidget(wdg)
 
         menubar = self.menuBar()
         file_menu = menubar.addMenu("&File")
@@ -47,27 +76,24 @@ class MainWindow(QMainWindow):
         self.insert_child_action.setShortcut("Ctrl+N")
         self.insert_child_action.triggered.connect(self.insert_child)
 
-        self.model = TreeModel(self)
-
         if "-t" in sys.argv:
             QAbstractItemModelTester(self.model, self)
 
-        self.view.setModel(self.model)
-        self.view.expandAll()
+        self.tree.expandAll()
 
         for column in range(self.model.columnCount()):
-            self.view.resizeColumnToContents(column)
+            self.tree.resizeColumnToContents(column)
 
-        selection_model = self.view.selectionModel()
+        selection_model = self.tree.selectionModel()
         selection_model.selectionChanged.connect(self.update_actions)
 
         self.update_actions()
 
     @Slot()
     def insert_child(self) -> None:
-        selection_model = self.view.selectionModel()
+        selection_model = self.tree.selectionModel()
         index: QModelIndex = selection_model.currentIndex()
-        model: QAbstractItemModel = self.view.model()
+        model: QAbstractItemModel = self.tree.model()
 
         if model.columnCount(index) == 0:
             if not model.insertColumn(0, index):
@@ -89,8 +115,8 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def insert_column(self) -> None:
-        model: QAbstractItemModel = self.view.model()
-        column: int = self.view.selectionModel().currentIndex().column()
+        model: QAbstractItemModel = self.tree.model()
+        column: int = self.tree.selectionModel().currentIndex().column()
 
         changed: bool = model.insertColumn(column + 1)
         if changed:
@@ -100,8 +126,8 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def insert_row(self) -> None:
-        index: QModelIndex = self.view.selectionModel().currentIndex()
-        model: QAbstractItemModel = self.view.model()
+        index: QModelIndex = self.tree.selectionModel().currentIndex()
+        model: QAbstractItemModel = self.tree.model()
         parent: QModelIndex = index.parent()
 
         if not model.insertRow(index.row() + 1, parent):
@@ -115,23 +141,23 @@ class MainWindow(QMainWindow):
 
     @Slot()
     def remove_column(self) -> None:
-        model: QAbstractItemModel = self.view.model()
-        column: int = self.view.selectionModel().currentIndex().column()
+        model: QAbstractItemModel = self.tree.model()
+        column: int = self.tree.selectionModel().currentIndex().column()
 
         if model.removeColumn(column):
             self.update_actions()
 
     @Slot()
     def remove_row(self) -> None:
-        index: QModelIndex = self.view.selectionModel().currentIndex()
-        model: QAbstractItemModel = self.view.model()
+        index: QModelIndex = self.tree.selectionModel().currentIndex()
+        model: QAbstractItemModel = self.tree.model()
 
         if model.removeRow(index.row(), index.parent()):
             self.update_actions()
 
     @Slot()
     def update_actions(self) -> None:
-        selection_model = self.view.selectionModel()
+        selection_model = self.tree.selectionModel()
         has_selection: bool = not selection_model.selection().isEmpty()
         self.remove_row_action.setEnabled(has_selection)
         self.remove_column_action.setEnabled(has_selection)
@@ -142,7 +168,7 @@ class MainWindow(QMainWindow):
         self.insert_column_action.setEnabled(has_current)
 
         if has_current:
-            self.view.closePersistentEditor(current_index)
+            self.tree.closePersistentEditor(current_index)
             msg = f"Position: ({current_index.row()},{current_index.column()})"
             if not current_index.parent().isValid():
                 msg += " in top level"

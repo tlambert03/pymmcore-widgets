@@ -1,18 +1,17 @@
-# Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass, field
 from typing import Any
-from qtpy.QtCore import QModelIndex, Qt, QAbstractItemModel
-# from treeitem import TreeItem
+
+from qtpy.QtCore import QAbstractItemModel, QModelIndex, Qt
 
 
 @dataclass
 class TreeItem:
     data: list[Any] = field(default_factory=list)
     parent: TreeItem | None = None
-    children: list["TreeItem"] = field(default_factory=list)
+    children: list[TreeItem] = field(default_factory=list)
 
     def index_in_parent(self) -> int:
         if self.parent:
@@ -26,19 +25,33 @@ class TreeItem:
         if position < 0 or position > len(self.children):
             return False
 
-        for row in range(count):
-            item = TreeItem("", self)
+        for _row in range(count):
+            item = TreeItem([""], self)
             self.children.insert(position, item)
 
+        return True
+
+    def remove_children(self, position: int, count: int) -> bool:
+        if position < 0 or position + count > len(self.children):
+            return False
+
+        del self.children[position : position + count]
+        return True
+
+    def set_data(self, column: int, value):
+        if column < 0 or column >= len(self.data):
+            return False
+
+        self.data[column] = value
         return True
 
 
 root = TreeItem()
 for x in range(3):
     group = TreeItem([f"group{x}"], parent=root)
-    for i in range(6):
+    for i in range(random.randint(2, 5)):
         preset = TreeItem([f"preset{i}"], parent=group)
-        for j in range(4):
+        for _j in range(4):
             setting = TreeItem([f"dev{i}", "prop", "value"], parent=preset)
             preset.children.append(setting)
         group.children.append(preset)
@@ -165,9 +178,6 @@ class TreeModel(QAbstractItemModel):
         self, position: int, rows: int, parent: QModelIndex = QModelIndex()
     ) -> bool:
         parent_item: TreeItem = self.get_item(parent)
-        if not parent_item:
-            return False
-
         self.beginRemoveRows(parent, position, position + rows - 1)
         success: bool = parent_item.remove_children(position, rows)
         self.endRemoveRows()
@@ -189,7 +199,7 @@ class TreeModel(QAbstractItemModel):
         return result
 
     def setHeaderData(
-        self, section: int, orientation: Qt.Orientation, value, role: int = None
+        self, section: int, orientation: Qt.Orientation, value, role: int | None = None
     ) -> bool:
         if role != Qt.ItemDataRole.EditRole or orientation != Qt.Orientation.Horizontal:
             return False

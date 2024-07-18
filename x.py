@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
+from PyQt6.QtGui import QPainter
 from pymmcore_plus import CMMCorePlus
 from pymmcore_plus.model import Microscope
 from qtpy.QtCore import QModelIndex, Qt
@@ -9,42 +12,60 @@ from qtpy.QtWidgets import (
     QHBoxLayout,
     QListView,
     QSplitter,
+    QStyledItemDelegate,
+    QStyleOptionViewItem,
     QTableView,
     QWidget,
 )
 
+if TYPE_CHECKING:
+    from qtpy.QtWidgets import QStyleOptionViewItem
 
-def scope_model(prop_tree: bool = False) -> QStandardItemModel:
-    core = CMMCorePlus.instance()
-    scope = Microscope.create_from_core(core)
-    model = QStandardItemModel()
-    for config in scope.config_groups.values():
-        group_item = QStandardItem(config.name)
-        for preset in config.presets.values():
-            preset_item = QStandardItem(preset.name)
+try:
+    CHECKED: int = int(Qt.CheckState.Checked.value)
+except AttributeError:
+    CHECKED = 2
 
-            if prop_tree:
-                _dpv: dict[str, dict[str, str]] = {}
+
+class QScopeModel(QStandardItemModel):
+    @classmethod
+    def from_scope(cls, scope: Microscope | None = None) -> QScopeModel:
+        if scope is None:
+            scope = Microscope.create_from_core(CMMCorePlus.instance())
+
+        model = cls()
+        for config in scope.config_groups.values():
+            group_item = QStandardItem(config.name)
+            for preset in config.presets.values():
+                preset_item = QStandardItem(preset.name)
+
                 for dev, prop, val in preset.settings:
-                    if dev not in _dpv:
-                        _dpv[dev] = {}
-                    _dpv[dev][prop] = val
-                for dev, props in _dpv.items():
-                    dev_item = QStandardItem(dev)
-                    for prop, val in props.items():
-                        i0 = QStandardItem(prop)
-                        i0.setFlags(Qt.ItemFlag.ItemIsUserCheckable)
-                        dev_item.appendRow([i0, QStandardItem(val)])
-                    preset_item.appendRow(dev_item)
-            else:
-                for dev, prop, val in preset.settings:
-                    preset_item.appendRow(
-                        [QStandardItem(dev), QStandardItem(prop), QStandardItem(val)]
-                    )
+                    i0 = QStandardItem(f"{dev}-{prop}")
+                    i0.setFlags(i0.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                    i0.setCheckState(Qt.CheckState.Unchecked)
+                    preset_item.appendRow([i0, QStandardItem(val)])
 
-            group_item.appendRow(preset_item)
-        model.appendRow(group_item)
-    return model
+                group_item.appendRow(preset_item)
+            model.appendRow(group_item)
+        return model
+
+    def headerData(
+        self, section: int, orientation: Qt.Orientation, role: int = 0
+    ) -> Any:
+        d = super().headerData(section, orientation, role)
+        if orientation == Qt.Orientation.Horizontal:
+            if role == Qt.ItemDataRole.DisplayRole:
+                return ["Property", "Value"][section]
+        return d
+
+
+class ColDel(QStyledItemDelegate):
+    def paint(
+        self, painter: QPainter | None, option: QStyleOptionViewItem, index: QModelIndex
+    ) -> None:
+        if index.data(Qt.ItemDataRole.CheckStateRole) == CHECKED:
+            option.font.setBold(True)
+        return super().paint(painter, option, index)
 
 
 class Wdg(QWidget):
@@ -54,12 +75,15 @@ class Wdg(QWidget):
         self._groups = QListView()
         self._presets = QListView()
         self._settings = QTableView()
+        self._settings.setItemDelegate(ColDel())
 
-        model = scope_model()
+        model = QScopeModel.from_scope()
         self._groups.setModel(model)
         self._presets.setModel(model)
         self._settings.setModel(model)
-        self._settings.setModel(model)
+        self._settings.verticalHeader().setVisible(False)
+        hh = self._settings.horizontalHeader()
+        hh.setStretchLastSection(True)
 
         left = QSplitter(Qt.Orientation.Vertical)
         left.addWidget(self._groups)
@@ -89,7 +113,7 @@ class Wdg(QWidget):
 
     def _on_preset_changed(self, current: QModelIndex) -> None:
         self._settings.setRootIndex(current)
-        # self._settings.expandAll()
+        self._settings.resizeColumnsToContents()
 
 
 if __name__ == "__main__":

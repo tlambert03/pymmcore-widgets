@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from PyQt6.QtGui import QPainter
+from PyQt6.QtCore import QAbstractItemModel, QEvent
+from click import edit
 from pymmcore_plus import CMMCorePlus
 from pymmcore_plus.model import Microscope
 from qtpy.QtCore import QModelIndex, Qt
@@ -19,6 +20,7 @@ from qtpy.QtWidgets import (
 )
 
 if TYPE_CHECKING:
+    from PyQt6.QtGui import QPainter
     from qtpy.QtWidgets import QStyleOptionViewItem
 
 try:
@@ -42,6 +44,7 @@ class QScopeModel(QStandardItemModel):
                 for dev, prop, val in preset.settings:
                     i0 = QStandardItem(f"{dev}-{prop}")
                     i0.setFlags(i0.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                    i0.setData((dev, prop), Qt.ItemDataRole.UserRole)
                     i0.setCheckState(Qt.CheckState.Unchecked)
                     preset_item.appendRow([i0, QStandardItem(val)])
 
@@ -59,7 +62,47 @@ class QScopeModel(QStandardItemModel):
         return d
 
 
-class ColDel(QStyledItemDelegate):
+from pymmcore_widgets import PropertyWidget
+
+
+class SettingsDelegate(QStyledItemDelegate):
+    def setEditorData(self, editor: QWidget, index: QModelIndex) -> None:
+        print("setEditorData", editor, index)
+        if isinstance(editor, PropertyWidget) and index.column() == 1:
+            val = index.model().data(index, Qt.ItemDataRole.DisplayRole)
+            editor.setValue(val)
+        else:
+            super().setEditorData(editor, index)
+
+    def editorEvent(
+        self,
+        event: QEvent | None,
+        model: QAbstractItemModel | None,
+        option: QStyleOptionViewItem,
+        index: QModelIndex,
+    ) -> bool:
+        print("editorEvent", event, model, option, index)
+        return super().editorEvent(event, model, option, index)
+
+    def setModelData(
+        self, editor: QWidget, model: QStandardItemModel, index: QModelIndex
+    ) -> None:
+        print("setModelData", editor, model, index)
+        if isinstance(editor, PropertyWidget) and index.column() == 1:
+            model.setData(index, editor.value(), Qt.ItemDataRole.DisplayRole)
+        else:
+            super().setModelData(editor, model, index)
+
+    def createEditor(
+        self, parent: QWidget | None, option: QStyleOptionViewItem, index: QModelIndex
+    ) -> QWidget | None:
+        if index.column() == 1:
+            dp = index.model().data(index.siblingAtColumn(0), Qt.ItemDataRole.UserRole)
+            wdg = PropertyWidget(*dp, parent=parent, connect_core=False)
+            wdg.valueChanged.connect(lambda: self.commitData.emit(wdg))
+            return wdg
+        return super().createEditor(parent, option, index)
+
     def paint(
         self, painter: QPainter | None, option: QStyleOptionViewItem, index: QModelIndex
     ) -> None:
@@ -75,7 +118,7 @@ class Wdg(QWidget):
         self._groups = QListView()
         self._presets = QListView()
         self._settings = QTableView()
-        self._settings.setItemDelegate(ColDel())
+        self._settings.setItemDelegate(SettingsDelegate())
 
         model = QScopeModel.from_scope()
         self._groups.setModel(model)
@@ -114,6 +157,8 @@ class Wdg(QWidget):
     def _on_preset_changed(self, current: QModelIndex) -> None:
         self._settings.setRootIndex(current)
         self._settings.resizeColumnsToContents()
+        for row in range(current.model().rowCount(current)):
+            self._settings.openPersistentEditor(current.model().index(row, 1, current))
 
 
 if __name__ == "__main__":

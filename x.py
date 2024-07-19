@@ -157,8 +157,8 @@ class Wdg(QWidget):
     def _on_preset_changed(self, current: QModelIndex) -> None:
         self._settings.setRootIndex(current)
         self._settings.resizeColumnsToContents()
-        for row in range(current.model().rowCount(current)):
-            self._settings.openPersistentEditor(current.model().index(row, 1, current))
+        # for row in range(current.model().rowCount(current)):
+            # self._settings.openPersistentEditor(current.model().index(row, 1, current))
 
 
 if __name__ == "__main__":

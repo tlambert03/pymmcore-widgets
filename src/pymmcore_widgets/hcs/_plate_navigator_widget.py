@@ -27,8 +27,6 @@ from superqt.fonticon import icon
 
 from pymmcore_widgets.useq_widgets._well_plate_widget import (
     DATA_POSITION,
-    SELECTED_COLOR,
-    UNSELECTED_COLOR,
     WellPlateView,
 )
 
@@ -36,7 +34,9 @@ if TYPE_CHECKING:
     from PyQt6.QtWidgets import QGraphicsSceneMouseEvent
     from qtpy.QtGui import QMouseEvent
 
-SELECTED_COLOR = QColor(SELECTED_COLOR)
+SELECTED_COLOR = QColor(Qt.GlobalColor.green)
+
+UNSELECTED_COLOR = Qt.GlobalColor.transparent
 SELECTED_COLOR.setAlpha(127)  # Set opacity to 50%
 SELECTED_MOVE_TO_COLOR = QColor(Qt.GlobalColor.green)
 UNSELECTED_MOVE_TO_COLOR = QColor(Qt.GlobalColor.black)
@@ -233,7 +233,7 @@ class _WellPlateView(WellPlateView):
         font = QFont()
         font.setPixelSize(int(min(6000, well_rect.width() / 2.5)))
 
-        self.clear()
+        self._scene.clear()
         for pos in plan.all_well_positions:
             # invert y-axis for screen coordinates
             screen_x, screen_y = pos.x, -pos.y
@@ -289,7 +289,7 @@ class _WellPlateView(WellPlateView):
         well_height = plan.plate.well_size[1] * 1000
         well_rect = QRectF(-well_width / 2, -well_height / 2, well_width, well_height)
 
-        self.clear()
+        self._scene.clear()
         for pos in plan.all_well_positions:
             # invert y-axis for screen coordinates
             screen_x, screen_y = pos.x, -pos.y

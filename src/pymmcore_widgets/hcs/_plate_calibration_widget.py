@@ -93,6 +93,27 @@ class PlateCalibrationWidget(QWidget):
         # Select A1 well
         self._plate_view.setSelectedIndices([(0, 0)])
 
+    def platePlan(self) -> useq.WellPlatePlan:
+        """Return the plate plan with calibration information."""
+
+        fully_calibrated = len(self._calibrated_wells) >= self._min_wells_required
+        if fully_calibrated:
+            params = find_affine_transform(self._calibrated_wells)
+            a, b, ty, c, d, tx = params
+            # not quite right yet...
+            _a1_center_xy = (tx, ty)
+            _unit_y = np.hypot(a, c)
+            _unit_x = np.hypot(b, d)
+            _rotation = np.rad2deg(np.arctan2(c, a))
+            _rot2 = np.rad2deg(np.arctan2(-b, d))
+            _rot3 = np.rad2deg(np.arctan2(b, d))
+            print(f"Calibrated: {_a1_center_xy=}, {_unit_x=}, {_unit_y=}, {_rotation=}, {_rot2=}, {_rot3=}")
+
+        return useq.WellPlatePlan(
+            plate=self._current_plate,
+            a1_center_xy=_a1_center_xy,
+            rotation=_rotation,
+        )
     # -----------------------------------------------
 
     def _get_or_create_well_calibration_widget(
@@ -140,15 +161,13 @@ class PlateCalibrationWidget(QWidget):
                 self._plate_view.setWellColor(*idx, None)
 
         fully_calibrated = len(self._calibrated_wells) >= self._min_wells_required
-        self.calibrationChanged.emit(fully_calibrated)
         if fully_calibrated:
-            params = find_affine_transform(self._calibrated_wells)
-            a, b, ty, c, d, tx = params
-            # not quite right yet...
-            _a1_center_xy = (tx, ty)
-            _unit_y = np.hypot(a, c)
-            _unit_x = np.hypot(b, d)
-            _rotation = np.rad2deg(np.arctan2(c, a))
+            try:
+                find_affine_transform(self._calibrated_wells)
+            except ValueError:
+                print("OVERRULED")
+                fully_calibrated = False
+        self.calibrationChanged.emit(fully_calibrated)
 
     def _selected_well_index(self) -> tuple[int, int] | None:
         if selected := self._plate_view.selectedIndices():
@@ -172,11 +191,17 @@ def find_affine_transform(
     """
     A: list[list[int]] = []
     B: list[float] = []
-    for (row, col), (y, x) in index_coordinates.items():
-        A.append([row, col, 1, 0, 0, 0])
-        A.append([0, 0, 0, row, col, 1])
-        B.extend((x, y))
+    print("-----------")
+    print(index_coordinates)
+    for (row, col), (x, y) in index_coordinates.items():
+        A.append([-row, col, 1, 0, 0, 0])
+        A.append([0, 0, 0, -row, col, 1])
+        B.extend((y, x))
 
     # Solve the least squares problem to find the affine transformation parameters
-    params, _, _, _ = np.linalg.lstsq(np.array(A), np.array(B), rcond=None)
+    params, _a, rank, _c = np.linalg.lstsq(np.array(A), np.array(B), rcond=None)
+
+    if rank != 6:
+        raise ValueError("Underdetermined system of equations.  Point are collinear?")
+
     return tuple(params)  # type: ignore [no-any-return]

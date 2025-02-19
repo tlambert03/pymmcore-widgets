@@ -104,43 +104,50 @@ class StageViewer(QWidget):
         """Return the rectangle visual."""
         return self._rects
 
-    def add_image(self, img: np.ndarray, x: float, y: float) -> None:
-        """Add an image to the scene.
-
-        The image is also added to the `image_store` dict where the (x, y) positions are
-        the keys and the images the value.
-
-        Parameters
-        ----------
-        img : np.ndarray
-            The image to add to the scene.
-        x : float
-            The x position of the image.
-        y : float
-            The y position of the image.
-        """
-        # in vispy, when you add an image and translate it, the (x, y) translation
-        # coordinates represent the bottom-left corner of the image. For us is better
-        # to have the (x, y) coordinates represent the center of the image. So we need
-        # to adjust the coordinates and move the image to the left and bottom by half of
-        # the width and height of the image. We also have to considet the pixel size.
-        h, w = np.array(img.shape)
-        x, y = round(x - w / 2 * self._pixel_size), round(y - h / 2 * self._pixel_size)
-        # store the image in the _image_store. NOTE: once the image is added to the view
-        # the (x, y) coords represent the bottom-left corner of the vispy Image.
-        if self.pixel_size not in self._image_store:
-            self._image_store[self.pixel_size] = {}
-        self._image_store[self.pixel_size][(x, y)] = img
-        # get the current scale
-        self._current_scale = scale = self.get_scale()
-        # add the image to the scene with the current scale
-        img = img[::scale, ::scale]
-        frame = Image(img, cmap="grays", parent=self.view.scene, clim="auto")
+    def add_image(self, img: np.ndarray, transform: np.ndarray, clim="auto") -> None:
+        """Add an image to the scene."""
+        frame = Image(img, cmap="grays", parent=self.view.scene, clim=clim)
         # keep the added image on top of the others
         frame.order = min(child.order for child in self._get_images()) - 1
-        frame.transform = scene.STTransform(
-            scale=(scale * self._pixel_size, scale * self._pixel_size), translate=(x, y)
-        )
+        frame.transform = scene.MatrixTransform(matrix=transform)
+
+    # def add_image(self, img: np.ndarray, x: float, y: float) -> None:
+    #     """Add an image to the scene.
+
+    #     The image is also added to the `image_store` dict where the (x, y) positions are
+    #     the keys and the images the value.
+
+    #     Parameters
+    #     ----------
+    #     img : np.ndarray
+    #         The image to add to the scene.
+    #     x : float
+    #         The x position of the image.
+    #     y : float
+    #         The y position of the image.
+    #     """
+    #     # in vispy, when you add an image and translate it, the (x, y) translation
+    #     # coordinates represent the bottom-left corner of the image. For us is better
+    #     # to have the (x, y) coordinates represent the center of the image. So we need
+    #     # to adjust the coordinates and move the image to the left and bottom by half of
+    #     # the width and height of the image. We also have to considet the pixel size.
+    #     h, w = np.array(img.shape)
+    #     x, y = round(x - w / 2 * self._pixel_size), round(y - h / 2 * self._pixel_size)
+    #     # store the image in the _image_store. NOTE: once the image is added to the view
+    #     # the (x, y) coords represent the bottom-left corner of the vispy Image.
+    #     if self.pixel_size not in self._image_store:
+    #         self._image_store[self.pixel_size] = {}
+    #     self._image_store[self.pixel_size][(x, y)] = img
+    #     # get the current scale
+    #     self._current_scale = scale = self.get_scale()
+    #     # add the image to the scene with the current scale
+    #     img = img[::scale, ::scale]
+    #     frame = Image(img, cmap="grays", parent=self.view.scene, clim="auto")
+    #     # keep the added image on top of the others
+    #     frame.order = min(child.order for child in self._get_images()) - 1
+    #     frame.transform = scene.STTransform(
+    #         scale=(scale * self._pixel_size, scale * self._pixel_size), translate=(x, y)
+    #     )
 
     def update_by_scale(self, scale: int) -> None:
         """Update the images in the scene based on scale and pixel size."""
@@ -206,7 +213,7 @@ class StageViewer(QWidget):
         if scale == self._current_scale:
             return
         self._current_scale = scale
-        self.update_by_scale(scale)
+        # self.update_by_scale(scale)
         self.scaleChanged.emit(scale)
 
     def _tform(self) -> scene.transforms.BaseTransform:
@@ -263,8 +270,8 @@ class StageViewer(QWidget):
             return
         if event.is_dragging and not self._drag:
             self._drag = True
-        if self._drag:
-            self.update_by_scale(self._current_scale)
+        # if self._drag:
+        # self.update_by_scale(self._current_scale)
 
     def update_rectangle(self, end: tuple[float, float]) -> None:
         """Update the rectangle visual with correct coordinates."""
@@ -292,7 +299,7 @@ class StageViewer(QWidget):
             return
         if self._drag:
             self._drag = False
-            self.update_by_scale(self._current_scale)
+            # self.update_by_scale(self._current_scale)
 
     def _get_images(self) -> Iterator[Image]:
         """Yield images in the scene."""

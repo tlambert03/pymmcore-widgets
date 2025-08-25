@@ -53,15 +53,18 @@ class StandardIcon(str, Enum):
         return self.value
 
     @classmethod
-    def for_device_type(cls, device_type: DeviceType | str) -> StandardIcon:
+    def for_device_type(
+        cls, device_type: DeviceType | str, mmcore: CMMCorePlus | None = None
+    ) -> StandardIcon:
         """Return an icon for a specific device type.
 
         If a string is provided, it will be resolved to a DeviceType using the
         CMMCorePlus.instance.
         """
         if isinstance(device_type, str):  # device label
+            core = mmcore or CMMCorePlus.instance()
             try:
-                device_type = CMMCorePlus.instance().getDeviceType(device_type)
+                device_type = core.getDeviceType(device_type)
             except Exception:  # pragma: no cover
                 device_type = DeviceType.Unknown
 

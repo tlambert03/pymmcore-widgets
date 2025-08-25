@@ -21,14 +21,16 @@ class ConfigGroupsTree(QTreeView):
         cls, core: CMMCorePlus, parent: QWidget | None = None
     ) -> ConfigGroupsTree:
         """Create a ConfigGroupsTree from a CMMCorePlus instance."""
-        obj = cls(parent)
+        obj = cls(parent, core)
         model = QConfigGroupsModel.create_from_core(core)
         obj.setModel(model)
         return obj
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, parent: QWidget | None = None, core: CMMCorePlus | None = None
+    ) -> None:
         super().__init__(parent)
-        self.setItemDelegateForColumn(2, PropertySettingDelegate(self))
+        self.setItemDelegateForColumn(2, PropertySettingDelegate(self, mmcore=core))
 
     def setModel(self, model: QAbstractItemModel | None) -> None:
         """Set the model for the tree view."""

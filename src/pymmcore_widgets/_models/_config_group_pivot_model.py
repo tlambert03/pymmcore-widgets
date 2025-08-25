@@ -10,14 +10,18 @@ from ._py_config_model import ConfigPreset, DevicePropertySetting
 from ._q_config_model import QConfigGroupsModel
 
 if TYPE_CHECKING:
+    from pymmcore_plus import CMMCorePlus
     from qtpy.QtWidgets import QWidget
 
 
 class ConfigGroupPivotModel(QAbstractTableModel):
     """Pivot a single ConfigGroup into rows=Device/Property, cols=Presets."""
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, parent: QWidget | None = None, mmcore: CMMCorePlus | None = None
+    ) -> None:
         super().__init__(parent)
+        self._mmcore = mmcore
         self._src: QConfigGroupsModel | None = None
         self._gidx: QModelIndex | None = None
         self._presets: list[ConfigPreset] = []
@@ -155,7 +159,7 @@ class ConfigGroupPivotModel(QAbstractTableModel):
                     dev, _prop = self._rows[section]
                 except IndexError:  # pragma: no cover
                     return None
-                if icon := StandardIcon.for_device_type(dev):
+                if icon := StandardIcon.for_device_type(dev, self._mmcore):
                     return icon.icon().pixmap(QSize(16, 16))
         return None
 

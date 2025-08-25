@@ -36,16 +36,19 @@ class ConfigPresetsTableView(QTableView):
     `setGroup` with the name or index of the group you want to view.
     """
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, parent: QWidget | None = None, mmcore: CMMCorePlus | None = None
+    ) -> None:
         super().__init__(parent)
-        self.setItemDelegate(PropertySettingDelegate(self))
+        self._mmcore = mmcore
+        self.setItemDelegate(PropertySettingDelegate(self, mmcore=mmcore))
         self._transpose_proxy: QTransposeProxyModel | None = None
         self._pivot_model: ConfigGroupPivotModel | None = None
 
     def setModel(self, model: QAbstractItemModel | None) -> None:
         """Set the model for the table view."""
         if isinstance(model, QConfigGroupsModel):
-            matrix = ConfigGroupPivotModel()
+            matrix = ConfigGroupPivotModel(mmcore=self._mmcore)
             matrix.setSourceModel(model)
         elif isinstance(model, ConfigGroupPivotModel):  # pragma: no cover
             matrix = model
@@ -151,14 +154,16 @@ class ConfigPresetsTable(QWidget):
         cls, core: CMMCorePlus, parent: QWidget | None = None
     ) -> ConfigPresetsTable:
         """Create a PresetsTable from a CMMCorePlus instance."""
-        obj = cls(parent)
+        obj = cls(parent, core)
         model = QConfigGroupsModel.create_from_core(core)
         obj.setModel(model)
         return obj
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(
+        self, parent: QWidget | None = None, mmcore: CMMCorePlus | None = None
+    ) -> None:
         super().__init__(parent)
-        self.view = ConfigPresetsTableView(self)
+        self.view = ConfigPresetsTableView(self, mmcore=mmcore)
 
         self._toolbar = tb = QToolBar(self)
         tb.setIconSize(QSize(16, 16))

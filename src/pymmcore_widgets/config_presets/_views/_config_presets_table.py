@@ -3,6 +3,7 @@ from __future__ import annotations
 from contextlib import suppress
 from typing import TYPE_CHECKING
 
+from pymmcore_plus import CMMCorePlus
 from qtpy.QtCore import (
     QAbstractItemModel,
     QModelIndex,
@@ -19,7 +20,6 @@ from pymmcore_widgets._models import ConfigGroupPivotModel, QConfigGroupsModel
 from ._property_setting_delegate import PropertySettingDelegate
 
 if TYPE_CHECKING:
-    from pymmcore_plus import CMMCorePlus
     from PyQt6.QtGui import QAction
 
 else:
@@ -40,7 +40,7 @@ class ConfigPresetsTableView(QTableView):
         self, parent: QWidget | None = None, mmcore: CMMCorePlus | None = None
     ) -> None:
         super().__init__(parent)
-        self._mmcore = mmcore
+        self._mmcore = mmcore or CMMCorePlus.instance()
         self.setItemDelegate(PropertySettingDelegate(self, mmcore=mmcore))
         self._transpose_proxy: QTransposeProxyModel | None = None
         self._pivot_model: ConfigGroupPivotModel | None = None

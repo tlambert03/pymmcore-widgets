@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
+from pymmcore_plus import CMMCorePlus
 from qtpy.QtCore import QAbstractItemModel, QModelIndex, Qt
 from qtpy.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem, QWidget
 
 from pymmcore_widgets._models import DevicePropertySetting
 from pymmcore_widgets.device_properties import PropertyWidget
-
-if TYPE_CHECKING:
-    from pymmcore_plus import CMMCorePlus
 
 
 class PropertySettingDelegate(QStyledItemDelegate):
@@ -19,7 +15,7 @@ class PropertySettingDelegate(QStyledItemDelegate):
         self, parent: QWidget | None = None, mmcore: CMMCorePlus | None = None
     ) -> None:
         super().__init__(parent)
-        self._mmcore = mmcore
+        self._mmcore = mmcore or CMMCorePlus.instance()
 
     def createEditor(
         self, parent: QWidget | None, option: QStyleOptionViewItem, index: QModelIndex

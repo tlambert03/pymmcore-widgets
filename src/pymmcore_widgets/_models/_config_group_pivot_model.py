@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from pymmcore_plus import CMMCorePlus
 from qtpy.QtCore import QAbstractTableModel, QModelIndex, QSize, Qt
 
 from pymmcore_widgets._icons import StandardIcon
@@ -10,7 +11,6 @@ from ._py_config_model import ConfigPreset, DevicePropertySetting
 from ._q_config_model import QConfigGroupsModel
 
 if TYPE_CHECKING:
-    from pymmcore_plus import CMMCorePlus
     from qtpy.QtWidgets import QWidget
 
 
@@ -21,7 +21,7 @@ class ConfigGroupPivotModel(QAbstractTableModel):
         self, parent: QWidget | None = None, mmcore: CMMCorePlus | None = None
     ) -> None:
         super().__init__(parent)
-        self._mmcore = mmcore
+        self._mmcore = mmcore or CMMCorePlus.instance()
         self._src: QConfigGroupsModel | None = None
         self._gidx: QModelIndex | None = None
         self._presets: list[ConfigPreset] = []

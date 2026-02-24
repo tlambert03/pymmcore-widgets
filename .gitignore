@@ -109,3 +109,4 @@ ENV/
 pymmcore_widgets/_version.py
 src/pymmcore_widgets/_version.py
 uv.lock
+_generated/

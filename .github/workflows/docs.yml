@@ -1,32 +1,52 @@
 name: docs
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  deploy:
+  build:
     runs-on: macos-13
     env:
       UV_NO_SYNC: "1"
     steps:
       - uses: actions/checkout@v6
       - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
       - uses: pymmcore-plus/setup-mm-test-adapters@main
 
       - name: Install dependencies
         run: uv sync --no-dev --group docs --extra PyQt6
 
-      - name: Test docs
-        if: github.event_name == 'pull_request'
-        run: uv run mkdocs build --strict
+      - name: Run prebuild
+        run: uv run python docs/_prebuild.py
 
-      - name: Deploy docs
-        if: github.ref == 'refs/heads/main'
-        run: uv run mkdocs gh-deploy --strict --force
+      - name: Build docs
+        run: uv run zensical build --strict
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/configure-pages@v5
+      - uses: actions/deploy-pages@v4
+        id: deployment

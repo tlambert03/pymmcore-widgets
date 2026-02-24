@@ -77,22 +77,22 @@ def generate_widget_pages() -> None:
 
     for _, widgets in widget_dict.items():
         for widget in widgets:
-            # skip widgets that have manually-written pages
-            if (WIDGETS / f"{widget}.md").exists():
-                continue
-
             snake = _camel_to_snake(widget)
             example_path = EXAMPLES / f"{snake}.py"
             if not example_path.exists():
                 print(f"  SKIP {widget}: no example at {example_path}")
                 continue
 
-            # Generate the markdown page
+            # Generate the markdown page (always overwrite)
             md = dedent(TEMPLATE.format(widget=widget, snake=snake))
             (WIDGETS / f"{widget}.md").write_text(md)
 
-            # Generate the screenshot
-            img_path = str(IMAGES / f"{snake}.png")
+            # Skip screenshot if it already exists
+            img_path = IMAGES / f"{snake}.png"
+            if img_path.exists():
+                print(f"  Generated {widget}.md (screenshot cached)")
+                continue
+
             try:
                 src = example_path.read_text().strip()
                 src = src.replace(
@@ -117,7 +117,7 @@ def generate_widget_pages() -> None:
                         new[0],
                     )
                     w.setMinimumWidth(300)
-                    w.grab().save(img_path)
+                    w.grab().save(str(img_path))
 
                 # clean up core instance
                 del _mmcore_plus._instance

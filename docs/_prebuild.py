@@ -12,11 +12,11 @@ GENERATED = DOCS.parent / "_generated"
 WIDGET_LIST = DOCS / "widget_list.json"
 WIDGETS = DOCS / "widgets"
 EXAMPLES = DOCS.parent / "examples"
-IMAGES = DOCS / "images"
+IMAGES = DOCS / "images" / "generated"
 
 TEMPLATE = """\
 <figure markdown>
-  ![{widget} widget](../images/{snake}.png){{ loading=lazy, class="widget-image" }}
+  ![{widget} widget](../images/generated/{snake}.png){{ loading=lazy, class="widget-image" }}
   <figcaption>
     This image generated from <a href="#example">example code below</a>.
   </figcaption>
@@ -29,7 +29,7 @@ TEMPLATE = """\
 ```python linenums="1" title="{snake}.py"
 --8<-- "examples/{snake}.py"
 ```
-"""
+"""  # noqa: E501
 
 
 def _camel_to_snake(name: str) -> str:
@@ -107,9 +107,7 @@ def generate_widget_pages() -> None:
                 app = QApplication.instance() or QApplication([])
                 new = [w for w in app.topLevelWidgets() if id(w) not in seen]
                 new = [
-                    w
-                    for w in new
-                    if w.__class__.__name__ not in ["QFrame", "QMenu"]
+                    w for w in new if w.__class__.__name__ not in ["QFrame", "QMenu"]
                 ]
                 seen.update(id(w) for w in new)
 

@@ -15,8 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: macos-13
+  deploy:
+    runs-on: macos-latest
     env:
       UV_NO_SYNC: "1"
     steps:

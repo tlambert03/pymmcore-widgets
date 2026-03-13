@@ -6,7 +6,9 @@ from qtpy.QtCore import QAbstractTableModel, QModelIndex, QSize, Qt
 
 from pymmcore_widgets._icons import StandardIcon
 
-from ._py_config_model import ConfigPreset, DevicePropertySetting
+from mmcore_schema.state import PropertyInfo
+
+from ._py_config_model import ConfigPreset
 from ._q_config_model import QConfigGroupsModel
 
 if TYPE_CHECKING:
@@ -22,7 +24,7 @@ class ConfigGroupPivotModel(QAbstractTableModel):
         self._gidx: QModelIndex | None = None
         self._presets: list[ConfigPreset] = []
         self._rows: list[tuple[str, str]] = []  # (device_name, property_name)
-        self._data: dict[tuple[int, int], DevicePropertySetting] = {}
+        self._data: dict[tuple[int, int], PropertyInfo] = {}
 
     def sourceModel(self) -> QConfigGroupsModel | None:
         """Return the source model."""
@@ -71,8 +73,8 @@ class ConfigGroupPivotModel(QAbstractTableModel):
         dev_prop = self._rows[row]
         # Create or update the setting
         # Update our local data
-        self._data[(row, col)] = setting = DevicePropertySetting(
-            device_label=dev_prop[0], property_name=dev_prop[1], value=str(value)
+        self._data[(row, col)] = setting = PropertyInfo(
+            name=dev_prop[1], device_label=dev_prop[0], value=str(value)
         )
 
         # Update the preset's settings list
@@ -82,7 +84,7 @@ class ConfigGroupPivotModel(QAbstractTableModel):
         for i, existing_setting in enumerate(preset_settings):
             existing_key = (
                 existing_setting.device_label,
-                existing_setting.property_name,
+                existing_setting.name,
             )
             if existing_key == dev_prop:
                 preset_settings[i] = setting
@@ -114,14 +116,18 @@ class ConfigGroupPivotModel(QAbstractTableModel):
             if not node:
                 return  # pragma: no cover
             self._presets = [child.payload for child in node.children]
-            keys = (setting.key() for p in self._presets for setting in p.settings)
+            keys = (
+                (s.device_label, s.name)
+                for p in self._presets
+                for s in p.settings
+            )
             self._rows = list(dict.fromkeys(keys, None))  # unique (device, prop) pairs
 
             self._data.clear()
             for col, preset in enumerate(self._presets):
                 for row, (device, prop) in enumerate(self._rows):
                     for s in preset.settings:
-                        if s.key() == (device, prop):
+                        if (s.device_label, s.name) == (device, prop):
                             self._data[(row, col)] = s
                             break
         finally:

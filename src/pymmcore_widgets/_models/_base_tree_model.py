@@ -2,16 +2,17 @@ from __future__ import annotations
 
 from typing import overload
 
+from mmcore_schema.state import DeviceInfo, PropertyInfo
 from qtpy.QtCore import QAbstractItemModel, QModelIndex, QObject, Qt
 from typing_extensions import Self
 
-from ._py_config_model import ConfigGroup, ConfigPreset, Device, DevicePropertySetting
+from ._py_config_model import ConfigGroup, ConfigPreset
 
 NULL_INDEX = QModelIndex()
 
 
 class _Node:
-    """Generic tree node that wraps a ConfigGroup, ConfigPreset, or Setting."""
+    """Generic tree node that wraps a ConfigGroup, ConfigPreset, or PropertyInfo."""
 
     __slots__ = (
         "check_state",
@@ -24,14 +25,14 @@ class _Node:
     @classmethod
     def create(
         cls,
-        payload: ConfigGroup | ConfigPreset | DevicePropertySetting | Device,
+        payload: ConfigGroup | ConfigPreset | PropertyInfo | DeviceInfo,
         parent: _Node | None = None,
         recursive: bool = True,
     ) -> Self:
         """Create a new _Node with the given name and payload."""
-        if isinstance(payload, DevicePropertySetting):
-            name = payload.property_name
-        elif isinstance(payload, Device):
+        if isinstance(payload, PropertyInfo):
+            name = payload.name
+        elif isinstance(payload, DeviceInfo):
             name = payload.label
         else:
             name = payload.name
@@ -44,7 +45,7 @@ class _Node:
             elif isinstance(payload, ConfigPreset):
                 for s in payload.settings:
                     node.children.append(_Node.create(s, node))
-            elif isinstance(payload, Device):
+            elif isinstance(payload, DeviceInfo):
                 for prop in payload.properties:
                     node.children.append(_Node.create(prop, node))
         return node
@@ -54,8 +55,8 @@ class _Node:
         name: str,
         payload: ConfigGroup
         | ConfigPreset
-        | DevicePropertySetting
-        | Device
+        | PropertyInfo
+        | DeviceInfo
         | None = None,
         parent: _Node | None = None,
     ) -> None:
@@ -96,11 +97,11 @@ class _Node:
 
     @property
     def is_setting(self) -> bool:
-        return isinstance(self.payload, DevicePropertySetting)
+        return isinstance(self.payload, PropertyInfo)
 
     @property
     def is_device(self) -> bool:
-        return isinstance(self.payload, Device)
+        return isinstance(self.payload, DeviceInfo)
 
 
 class _BaseTreeModel(QAbstractItemModel):

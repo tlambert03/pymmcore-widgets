@@ -3,7 +3,7 @@ from __future__ import annotations
 from qtpy.QtCore import QAbstractItemModel, QModelIndex, Qt
 from qtpy.QtWidgets import QStyledItemDelegate, QStyleOptionViewItem, QWidget
 
-from pymmcore_widgets._models import DevicePropertySetting
+from mmcore_schema.state import PropertyInfo
 from pymmcore_widgets.device_properties import PropertyWidget
 
 
@@ -14,12 +14,12 @@ class PropertySettingDelegate(QStyledItemDelegate):
         self, parent: QWidget | None, option: QStyleOptionViewItem, index: QModelIndex
     ) -> QWidget | None:
         if not isinstance(
-            (setting := index.data(Qt.ItemDataRole.UserRole)), DevicePropertySetting
+            (setting := index.data(Qt.ItemDataRole.UserRole)), PropertyInfo
         ):
             return super().createEditor(parent, option, index)  # pragma: no cover
         widget = PropertyWidget(
             setting.device_label,
-            setting.property_name,
+            setting.name,
             parent=parent,
             connect_core=False,
         )
@@ -30,7 +30,7 @@ class PropertySettingDelegate(QStyledItemDelegate):
 
     def setEditorData(self, editor: QWidget | None, index: QModelIndex) -> None:
         setting = index.data(Qt.ItemDataRole.UserRole)
-        if isinstance(setting, DevicePropertySetting) and isinstance(
+        if isinstance(setting, PropertyInfo) and isinstance(
             editor, PropertyWidget
         ):
             editor.setValue(setting.value)

@@ -5,6 +5,7 @@ from copy import deepcopy
 from enum import IntEnum
 from typing import TYPE_CHECKING, Any, cast
 
+from mmcore_schema.state import PropertyInfo
 from qtpy.QtCore import QModelIndex, Qt
 from qtpy.QtGui import QFont, QIcon
 from superqt import QIconifyIcon
@@ -13,7 +14,7 @@ from pymmcore_widgets._icons import StandardIcon
 
 from ._base_tree_model import _BaseTreeModel, _Node
 from ._core_functions import get_config_groups
-from ._py_config_model import ConfigGroup, ConfigPreset, DevicePropertySetting
+from ._py_config_model import ConfigGroup, ConfigPreset
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -32,8 +33,17 @@ class Col(IntEnum):
     Value = 2
 
 
+def _setting_icon(info: PropertyInfo) -> StandardIcon | None:
+    """Return the icon key for a property setting, if any."""
+    if info.is_read_only:
+        return StandardIcon.READ_ONLY
+    if info.is_pre_init:
+        return StandardIcon.PRE_INIT
+    return None
+
+
 class QConfigGroupsModel(_BaseTreeModel):
-    """Three-level model: root → groups → presets → settings."""
+    """Three-level model: root -> groups -> presets -> settings."""
 
     @classmethod
     def create_from_core(cls, core: CMMCorePlus) -> Self:
@@ -80,26 +90,31 @@ class QConfigGroupsModel(_BaseTreeModel):
                     return StandardIcon.SYSTEM_GROUP.icon().pixmap(16, 16)
                 return StandardIcon.CONFIG_GROUP.icon().pixmap(16, 16)
             if node.is_preset:
-                preset = cast("ConfigPreset", node.payload)
-                if preset.is_system_startup:  # pragma: no cover
-                    return StandardIcon.STARTUP.icon().pixmap(16, 16)
-                if preset.is_system_shutdown:  # pragma: no cover
-                    return StandardIcon.SHUTDOWN.icon().pixmap(16, 16)
+                # check for system startup/shutdown via tree parent
+                if (
+                    node.parent
+                    and node.parent.is_group
+                    and cast("ConfigGroup", node.parent.payload).is_system_group
+                ):
+                    if node.name.lower() == "startup":  # pragma: no cover
+                        return StandardIcon.STARTUP.icon().pixmap(16, 16)
+                    if node.name.lower() == "shutdown":  # pragma: no cover
+                        return StandardIcon.SHUTDOWN.icon().pixmap(16, 16)
                 return StandardIcon.CONFIG_PRESET.icon().pixmap(16, 16)
             if node.is_setting:
-                setting = cast("DevicePropertySetting", node.payload)
-                if icon_key := setting.iconify_key:
-                    return QIconifyIcon(icon_key).pixmap(16, 16)
+                setting = cast("PropertyInfo", node.payload)
+                if icon := _setting_icon(setting):
+                    return QIconifyIcon(icon).pixmap(16, 16)
                 return QIcon.fromTheme("emblem-system")  # pragma: no cover
 
         if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
             # settings: show Device, Property, Value
             if node.is_setting:
-                setting = cast("DevicePropertySetting", node.payload)
+                setting = cast("PropertyInfo", node.payload)
                 if col == Col.Item:
                     return setting.device_label
                 if col == Col.Property:
-                    return setting.property_name
+                    return setting.name
                 if col == Col.Value:
                     return setting.value
             # groups / presets: only show name
@@ -121,20 +136,20 @@ class QConfigGroupsModel(_BaseTreeModel):
         if node.is_setting:
             if 0 > index.column() > 3:
                 return False  # pragma: no cover
-            dev, prop, val = cast("DevicePropertySetting", node.payload).as_tuple()
+            old = cast("PropertyInfo", node.payload)
+            args = [old.device_label, old.name, old.value]
 
-            # update node in place  # FIXME ... this is hacky
-            args = [dev, prop, val]
+            # update node in place
             args[index.column()] = str(value)
             node.name = f"{args[0]}-{args[1]}"
-            node.payload = new_setting = DevicePropertySetting(
-                device_label=args[0], property_name=args[1], value=args[2]
+            node.payload = new_setting = PropertyInfo(
+                name=args[1], device_label=args[0], value=args[2]
             )
 
             # also update the parent preset.settings list reference
             parent_preset = cast("ConfigPreset", node.parent.payload)  # type: ignore
             for i, s in enumerate(parent_preset.settings):
-                if s.as_tuple()[0:2] == (dev, prop):
+                if (s.device_label, s.name) == (old.device_label, old.name):
                     parent_preset.settings[i] = new_setting
                     break
         else:
@@ -253,7 +268,7 @@ class QConfigGroupsModel(_BaseTreeModel):
             return QModelIndex()
 
         name = self._unique_child_name(group_node, base_name, suffix="")
-        preset = ConfigPreset(name=name, parent=group_node.payload)
+        preset = ConfigPreset(name=name)
         row = len(group_node.children)
         if self.insertRows(row, 1, group_idx, _payloads=[preset]):
             return self.index(row, 0, group_idx)
@@ -346,7 +361,7 @@ class QConfigGroupsModel(_BaseTreeModel):
             }
         elif isinstance((preset := parent_node.payload), ConfigPreset):
             preset.settings = [
-                cast("DevicePropertySetting", n.payload) for n in parent_node.children
+                cast("PropertyInfo", n.payload) for n in parent_node.children
             ]
 
         self.endRemoveRows()
@@ -390,7 +405,7 @@ class QConfigGroupsModel(_BaseTreeModel):
 
     # TODO: feels like this should be replaced with a more canonical method...
     def update_preset_settings(
-        self, preset_idx: QModelIndex, settings: list[DevicePropertySetting]
+        self, preset_idx: QModelIndex, settings: list[PropertyInfo]
     ) -> None:
         """Replace settings for `preset_idx` and update the tree safely."""
         preset_node = self._node_from_index(preset_idx)
@@ -425,18 +440,19 @@ class QConfigGroupsModel(_BaseTreeModel):
 
         setting_keys = set(settings)
 
-        # Create a dict of existing settings keyed by (device, property_name)
-        existing_settings = {s.key(): s for s in preset.settings}
+        # Create a dict of existing settings keyed by (device_label, name)
+        existing_settings = {
+            (s.device_label, s.name): s for s in preset.settings
+        }
 
         # Build the final list of settings
-        final_settings = []
-
+        final_settings: list[PropertyInfo] = []
         for key in setting_keys:
             if key in existing_settings:
                 final_settings.append(existing_settings[key])
             else:
                 final_settings.append(
-                    DevicePropertySetting(device_label=key[0], property_name=key[1])
+                    PropertyInfo(name=key[1], device_label=key[0])
                 )
 
         # Use the existing method to update the preset with the final settings
@@ -480,23 +496,19 @@ class QConfigGroupsModel(_BaseTreeModel):
 
     # insertion ---------------------------------------------------------------
 
-    # TODO: use this instead of _insert_node
-    # def insertRows(
-    #     self, row: int, count: int, parent: QModelIndex = QModelIndex()
-    # ) -> bool:
     def insertRows(
         self,
         row: int,
         count: int,
         parent: QModelIndex = NULL_INDEX,
         *,
-        _payloads: list[ConfigGroup | ConfigPreset | DevicePropertySetting]
-        | None = None,
+        _payloads: list[ConfigGroup | ConfigPreset | PropertyInfo] | None = None,
     ) -> bool:
         """Insert *count* rows at *row* under *parent*.
 
         *_payloads* is for internal use, and must be a list of exactly *count* data
-        objects (ConfigGroup, ConfigPreset, or Setting) that will become the new rows.
+        objects (ConfigGroup, ConfigPreset, or PropertyInfo) that will become the
+        new rows.
         """
         parent_node = self._node_from_index(parent)
 
@@ -513,28 +525,16 @@ class QConfigGroupsModel(_BaseTreeModel):
                 if isinstance((grp := parent_node.payload), ConfigGroup):
                     # inserting a new ConfigPreset
                     name = self._unique_child_name(parent_node, "Preset")
-                    _payloads.append(ConfigPreset(name=name, parent=grp))
+                    _payloads.append(ConfigPreset(name=name))
                 elif isinstance(parent_node.payload, ConfigPreset):
                     raise NotImplementedError(
                         "Inserting a Setting is not supported in this context."
                     )
-                    # # inserting a placeholder Setting
-                    # idx_placeholder = len(parent_node.children) + len(_payloads)
-                    # _payloads.append(
-                    #     Setting(
-                    #         device_name=f"Device {idx_placeholder}",
-                    #         property_name=f"Property {idx_placeholder}",
-                    #         property_value="",
-                    #     )
-                    # )
-                else:  # root level → ConfigGroup
+                else:  # root level -> ConfigGroup
                     name = self._unique_child_name(parent_node, "Group")
                     _payloads.append(ConfigGroup(name=name))
 
         # IMPORTANT: Ensure name uniqueness when inserting provided payloads.
-        # This is critical for undo/redo operations which restore objects that
-        # may have names that conflict with current items due to operations
-        # that occurred after the original object was removed.
         self.beginInsertRows(parent, row, row + count - 1)
 
         # ---------- modify the tree ----------
@@ -542,7 +542,6 @@ class QConfigGroupsModel(_BaseTreeModel):
             if isinstance(payload, (ConfigGroup, ConfigPreset)):
                 original_name = payload.name
                 if self._name_exists(parent_node, original_name):
-                    # Only modify the name if there's actually a conflict
                     unique_name = self._unique_child_name(
                         parent_node, original_name, suffix=""
                     )
@@ -560,7 +559,7 @@ class QConfigGroupsModel(_BaseTreeModel):
         elif isinstance((pre := parent_node.payload), ConfigPreset):
             settings = list(pre.settings)
             for i, payload in enumerate(_payloads):
-                settings.insert(row + i, cast("DevicePropertySetting", payload))
+                settings.insert(row + i, cast("PropertyInfo", payload))
             pre.settings = settings
 
         self.endInsertRows()

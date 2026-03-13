@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
+from mmcore_schema.state import PropertyInfo
 from pymmcore_plus import CMMCorePlus
 from qtpy.QtCore import QModelIndex, Qt
 from qtpy.QtGui import QFont, QIcon, QPixmap
@@ -11,7 +12,6 @@ from pymmcore_widgets._models import (
     ConfigGroup,
     ConfigGroupPivotModel,
     ConfigPreset,
-    DevicePropertySetting,
     QConfigGroupsModel,
     get_config_groups,
 )
@@ -69,7 +69,7 @@ def test_model_basic_methods(model: QConfigGroupsModel) -> None:
     [
         (Qt.ItemDataRole.DisplayRole, str),
         (Qt.ItemDataRole.EditRole, str),
-        (Qt.ItemDataRole.UserRole, (ConfigGroup, ConfigPreset, DevicePropertySetting)),
+        (Qt.ItemDataRole.UserRole, (ConfigGroup, ConfigPreset, PropertyInfo)),
         (Qt.ItemDataRole.FontRole, QFont),
         (Qt.ItemDataRole.DecorationRole, (QIcon, QPixmap)),
     ],
@@ -122,7 +122,7 @@ def test_model_set_data(model: QConfigGroupsModel, qtbot: QtBot) -> None:
     assert group0.name == "NewGroupName"
     assert preset0.name == "NewPresetName"
     assert setting0.device_label == "NewDevice"
-    assert setting0.property_name == "NewProperty"
+    assert setting0.name == "NewProperty"
     assert setting0.value == "NewSettingValue"
 
     # setting to the same value should not change the model
@@ -225,9 +225,7 @@ def test_update_preset_settings(model: QConfigGroupsModel, qtbot: QtBot) -> None
     grp0_index = model.index(0, 0)
     preset0_index = model.index(0, 0, grp0_index)
     new_settings = [
-        DevicePropertySetting(
-            device_label="NewDevice", property_name="NewProperty", value="NewValue"
-        )
+        PropertyInfo(name="NewProperty", device_label="NewDevice", value="NewValue")
     ]
     model.update_preset_settings(preset0_index, new_settings)
 
@@ -248,11 +246,11 @@ def test_update_preset_properties(model: QConfigGroupsModel, qtbot: QtBot) -> No
     original_settings_count = len(preset0.settings)
     assert original_settings_count > 1
 
-    # Get the first two existing settings as (device, property_name) tuples
+    # Get the first two existing settings as (device_label, name) tuples
     existing_setting1 = preset0.settings[0]
     existing_setting2 = preset0.settings[1]
-    existing_key1 = existing_setting1.key()
-    existing_key2 = existing_setting2.key()
+    existing_key1 = (existing_setting1.device_label, existing_setting1.name)
+    existing_key2 = (existing_setting2.device_label, existing_setting2.name)
 
     grp0_index = model.index(0, 0)
     preset0_index = model.index(0, 0, grp0_index)
@@ -274,7 +272,9 @@ def test_update_preset_properties(model: QConfigGroupsModel, qtbot: QtBot) -> No
     assert len(preset0_new.settings) == 3
 
     # Check that existing settings are preserved with their values
-    settings_by_key = {s.key(): s for s in preset0_new.settings}
+    settings_by_key = {
+        (s.device_label, s.name): s for s in preset0_new.settings
+    }
     assert existing_key1 in settings_by_key
     assert existing_key2 in settings_by_key
     assert ("NewDevice", "NewProperty") in settings_by_key
@@ -286,7 +286,7 @@ def test_update_preset_properties(model: QConfigGroupsModel, qtbot: QtBot) -> No
     # Verify new setting has empty value
     assert settings_by_key[("NewDevice", "NewProperty")].value == ""
     assert settings_by_key[("NewDevice", "NewProperty")].device_label == "NewDevice"
-    assert settings_by_key[("NewDevice", "NewProperty")].property_name == "NewProperty"
+    assert settings_by_key[("NewDevice", "NewProperty")].name == "NewProperty"
 
     # Test with invalid index
     with pytest.warns(UserWarning, match="Reference index is not a ConfigPreset."):
@@ -373,12 +373,8 @@ def test_pivot_model_two_way_sync(
 
     # Add a setting to the new preset
     test_settings = [
-        DevicePropertySetting(
-            device_label="Camera", property_name="Binning", value="8"
-        ),
-        DevicePropertySetting(
-            device_label="Camera", property_name="BitDepth", value="14"
-        ),
+        PropertyInfo(name="Binning", device_label="Camera", value="8"),
+        PropertyInfo(name="BitDepth", device_label="Camera", value="14"),
     ]
     model.update_preset_settings(new_preset_idx, test_settings)
 
@@ -409,7 +405,7 @@ def test_pivot_model_two_way_sync(
     updated_camera_group = next(g for g in updated_groups if g.name == "Camera")
     lowres_preset = updated_camera_group.presets["LowRes"]
     bitdepth_setting = next(
-        s for s in lowres_preset.settings if s.property_name == "BitDepth"
+        s for s in lowres_preset.settings if s.name == "BitDepth"
     )
     assert bitdepth_setting.value == new_value
 
@@ -431,9 +427,7 @@ def test_pivot_model_two_way_sync(
     # Add a new setting that doesn't exist in other presets
     new_settings = [
         *medres_preset.settings,
-        DevicePropertySetting(
-            device_label="Camera", property_name="NewProperty", value="NewValue"
-        ),
+        PropertyInfo(name="NewProperty", device_label="Camera", value="NewValue"),
     ]
     model.update_preset_settings(medres_preset_idx, new_settings)
 

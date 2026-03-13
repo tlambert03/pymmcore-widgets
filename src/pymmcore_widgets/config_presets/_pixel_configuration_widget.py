@@ -5,8 +5,10 @@ import warnings
 from collections import Counter
 from typing import TYPE_CHECKING, Any, cast
 
+from mmcore_schema import PropertySetting
+from mmcore_schema.state import PixelSizePreset
 from pymmcore_plus import CMMCorePlus, DeviceProperty
-from pymmcore_plus.model import PixelSizeGroup, PixelSizePreset, Setting
+from pymmcore_plus.core_io import apply_pixel_size_preset, read_pixel_size_presets
 from qtpy.QtCore import Qt, Signal
 from qtpy.QtWidgets import (
     QAbstractSpinBox,
@@ -204,13 +206,13 @@ class PixelConfigurationWidget(QWidget):
         self._px_table._remove_all()
         self._resID_map.clear()
 
-        px_groups = PixelSizeGroup.create_from_core(self._mmc)
-        if not px_groups.presets:
+        px_presets = read_pixel_size_presets(self._mmc)
+        if not px_presets:
             self._props_selector._prop_table.uncheckAll()
             self._props_selector.setEnabled(False)
             return
 
-        for row, px_preset in enumerate(px_groups.presets.values()):
+        for row, px_preset in enumerate(px_presets):
             self._resID_map[row] = px_preset
             data = {
                 self._px_table.ID.key: px_preset.name,
@@ -228,7 +230,7 @@ class PixelConfigurationWidget(QWidget):
                 # select first row of px_table corresponding to the first resolutionID
                 self._px_table._table.selectRow(row)
 
-    def _on_viewer_value_changed(self, value: list[Setting]) -> None:
+    def _on_viewer_value_changed(self, value: list[PropertySetting]) -> None:
         # get row of the selected resolutionID
         items = self._px_table._table.selectedItems()
         if len(items) != 1:
@@ -354,16 +356,14 @@ class PixelConfigurationWidget(QWidget):
     def _update_other_resolutionIDs(
         self,
         selected_resID_row: int,
-        selected_resID_props: list[Setting],
+        selected_resID_props: list[PropertySetting],
     ) -> None:
         """Update the data of in all resolutionIDs if different than the data of the
         selected resolutionID. All the resolutionIDs should have the same devices and
         properties.
         """  # noqa: D205
-        # selected_dev_prop = [(dev, prop) for dev, prop, _ in selected_resID_props]
         selected_dev_prop = [
-            (setting.device_name, setting.property_name)
-            for setting in selected_resID_props
+            (setting.device, setting.property) for setting in selected_resID_props
         ]
 
         for row in range(self._px_table._table.rowCount()):
@@ -378,22 +378,20 @@ class PixelConfigurationWidget(QWidget):
             properties = [
                 setting
                 for setting in properties
-                if (setting.device_name, setting.property_name) in selected_dev_prop
+                if (setting.device, setting.property) in selected_dev_prop
             ]
 
             # add the missing devices and properties
             res_id_dev_prop = {
-                (setting.device_name, setting.property_name) for setting in properties
+                (setting.device, setting.property) for setting in properties
             }
             properties += [
                 setting
                 for setting in selected_resID_props
-                if (setting.device_name, setting.property_name) not in res_id_dev_prop
+                if (setting.device, setting.property) not in res_id_dev_prop
             ]
 
-            self._resID_map[row].settings = sorted(
-                properties, key=lambda x: x.device_name
-            )
+            self._resID_map[row].settings = sorted(properties, key=lambda x: x.device)
 
     def _on_apply(self) -> None:
         """Update the current pixel size configurations."""
@@ -406,9 +404,8 @@ class PixelConfigurationWidget(QWidget):
             self._mmc.deletePixelSizeConfig(resolutionID)
 
         # create the new pixel size configurations
-        # px_groups = PixelSizeGroup(presets=self.value())
-        px_groups = PixelSizeGroup(presets=self._value_to_dict(self.value()))
-        px_groups.apply_to_core(self._mmc)
+        for preset in self.value():
+            apply_pixel_size_preset(self._mmc, preset)
         self.close()
 
     def _check_for_errors(self) -> bool:
@@ -614,27 +611,15 @@ class _PropertySelector(QWidget):
 
     # -------------- Public API --------------
 
-    def value(self) -> list[Setting]:
-        """Return the list of checked (device, property, value).
-
-        Parameters
-        ----------
-        value : list[Setting][pymmcore_plus.model.Setting]
-            List of (device, property, value) to be checked in the DevicePropertyTable.
-        """
+    def value(self) -> list[PropertySetting]:
+        """Return the list of checked (device, property, value)."""
         return [
-            Setting(dev, prop, val)
+            PropertySetting(device=dev, property=prop, value=val)
             for dev, prop, val in self._prop_table.getCheckedProperties()
         ]
 
-    def setValue(self, value: list[Setting]) -> None:
-        """Set the (device, property) to be checked in the DevicePropertyTable.
-
-        Parameters
-        ----------
-        value : list[Setting][pymmcore_plus.model.Setting]
-            List of (device, property, value) to be checked in the DevicePropertyTable.
-        """
+    def setValue(self, value: list[PropertySetting]) -> None:
+        """Set the (device, property) to be checked in the DevicePropertyTable."""
         # if value is empty, uncheck all the rows
         if not value:
             self._prop_table.uncheckAll()
@@ -642,8 +627,7 @@ class _PropertySelector(QWidget):
 
         # Convert value to a dictionary for faster lookups
         value_dict = {
-            (setting.device_name, setting.property_name): setting.property_value
-            for setting in value
+            (setting.device, setting.property): setting.value for setting in value
         }
 
         # check only the rows that are in value
@@ -687,23 +671,22 @@ class _PropertySelector(QWidget):
         """
         to_view_table: list[tuple[str, str, PropertyWidget]] = []
 
-        for dev, prop, val in self.value():
+        for setting in self.value():
             # create a PropertyWidget that will be added to the
             # _PropertyValueViewer table.
             wdg = PropertyWidget(
-                dev,
-                prop,
+                setting.device,
+                setting.property,
                 mmcore=self._mmc,
                 parent=self._prop_viewer,
                 connect_core=False,
             )
-            wdg.setValue(val)
+            wdg.setValue(setting.value)
             # connect the valueChanged signal of the PropertyWidget to the
             # _update_property_table method that will update the value of the
             # PropertyWidget in the DevicePropertyTable when the PropertyWidget changes.
             wdg.inner_widget.valueChanged.connect(self._update_property_table)
-            # to_view_table.append((dev, prop, val, wdg))
-            to_view_table.append((dev, prop, wdg))
+            to_view_table.append((setting.device, setting.property, wdg))
 
         # update the _PropertyValueViewer
         self._prop_viewer.setValue(to_view_table)

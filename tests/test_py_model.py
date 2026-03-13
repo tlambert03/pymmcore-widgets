@@ -1,15 +1,14 @@
 from pymmcore_plus import CMMCorePlus
-
-from pymmcore_widgets._models import (
-    get_available_devices,
-    get_config_groups,
-    get_loaded_devices,
+from pymmcore_plus.core_io import (
+    read_available_devices,
+    read_config_groups,
+    read_devices,
 )
 
 
 def test_get_loaded_devices() -> None:
     core = CMMCorePlus()
     core.loadSystemConfiguration()
-    get_loaded_devices(core)
-    get_available_devices(core)
-    get_config_groups(core)
+    read_devices(core)
+    read_available_devices(core)
+    read_config_groups(core)

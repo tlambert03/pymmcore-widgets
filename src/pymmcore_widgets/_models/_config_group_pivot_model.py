@@ -8,7 +8,8 @@ from pymmcore_widgets._icons import StandardIcon
 
 from mmcore_schema.state import PropertyInfo
 
-from ._py_config_model import ConfigPreset
+from mmcore_schema.state import ConfigPreset
+
 from ._q_config_model import QConfigGroupsModel
 
 if TYPE_CHECKING:

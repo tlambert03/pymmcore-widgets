@@ -8,12 +8,13 @@ from pymmcore_plus import CMMCorePlus
 from qtpy.QtCore import QModelIndex, Qt
 from qtpy.QtGui import QFont, QIcon, QPixmap
 
+from pymmcore_plus import core_io
+
 from pymmcore_widgets._models import (
     ConfigGroup,
     ConfigGroupPivotModel,
     ConfigPreset,
     QConfigGroupsModel,
-    get_config_groups,
 )
 
 if TYPE_CHECKING:
@@ -35,7 +36,7 @@ def test_model_initialization() -> None:
     # not using the fixture here, as we want to test the model creation directly
     core = CMMCorePlus()
     core.loadSystemConfiguration()
-    python_info = list(get_config_groups(core))
+    python_info = list(core_io.read_config_groups(core, enrich=True))
     model = QConfigGroupsModel(python_info)
 
     assert isinstance(model, QConfigGroupsModel)

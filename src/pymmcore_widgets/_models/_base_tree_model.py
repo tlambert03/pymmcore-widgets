@@ -2,11 +2,9 @@ from __future__ import annotations
 
 from typing import overload
 
-from mmcore_schema.state import DeviceInfo, PropertyInfo
+from mmcore_schema.state import ConfigGroup, ConfigPreset, DeviceInfo, PropertyInfo
 from qtpy.QtCore import QAbstractItemModel, QModelIndex, QObject, Qt
 from typing_extensions import Self
-
-from ._py_config_model import ConfigGroup, ConfigPreset
 
 NULL_INDEX = QModelIndex()
 

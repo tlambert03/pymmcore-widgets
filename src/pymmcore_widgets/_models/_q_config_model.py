@@ -5,7 +5,8 @@ from copy import deepcopy
 from enum import IntEnum
 from typing import TYPE_CHECKING, Any, cast
 
-from mmcore_schema.state import PropertyInfo
+from mmcore_schema.state import ConfigGroup, ConfigPreset, PropertyInfo
+from pymmcore_plus import core_io
 from qtpy.QtCore import QModelIndex, Qt
 from qtpy.QtGui import QFont, QIcon
 from superqt import QIconifyIcon
@@ -13,8 +14,6 @@ from superqt import QIconifyIcon
 from pymmcore_widgets._icons import StandardIcon
 
 from ._base_tree_model import _BaseTreeModel, _Node
-from ._core_functions import get_config_groups
-from ._py_config_model import ConfigGroup, ConfigPreset
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -47,7 +46,7 @@ class QConfigGroupsModel(_BaseTreeModel):
 
     @classmethod
     def create_from_core(cls, core: CMMCorePlus) -> Self:
-        return cls(get_config_groups(core))
+        return cls(core_io.read_config_groups(core, enrich=True))
 
     def __init__(self, groups: Iterable[ConfigGroup] | None = None) -> None:
         super().__init__()

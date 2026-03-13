@@ -1,15 +1,15 @@
 from pymmcore_plus import CMMCorePlus, DeviceType, Keyword
-from pymmcore_plus.model import Microscope
 from qtpy.QtWidgets import QCheckBox, QComboBox, QFormLayout
 from superqt.utils import signals_blocked
 
 from ._base_page import ConfigWizardPage
+from ._wizard_model import WizardModel
 
 
 class RolesPage(ConfigWizardPage):
     """Page for selecting default devices and auto-shutter setting."""
 
-    def __init__(self, model: Microscope, core: CMMCorePlus):
+    def __init__(self, model: WizardModel, core: CMMCorePlus):
         super().__init__(model, core)
         self.setTitle("Select default devices and choose auto-shutter setting")
         self.setSubTitle(

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 import pytest
-from pymmcore_plus.model import Microscope
+from pymmcore_widgets.hcwizard._wizard_model import WizardModel
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QCloseEvent, QFocusEvent
 
@@ -161,7 +161,7 @@ def test_device_setup_dialog(qtbot, global_mmcore: CMMCorePlus):
 
 
 def test_peripheral_setup_dialog(qtbot, global_mmcore: CMMCorePlus):
-    model = Microscope.create_from_core(global_mmcore)
+    model = WizardModel.create_from_core(global_mmcore)
 
     with pytest.raises(ValueError):
         dlg = PeripheralSetupDlg(model.get_device("Camera"), model, global_mmcore)

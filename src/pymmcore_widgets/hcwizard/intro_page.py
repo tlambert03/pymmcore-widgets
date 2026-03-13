@@ -2,7 +2,6 @@ import logging
 import os
 
 from pymmcore_plus import CMMCorePlus
-from pymmcore_plus.model import Microscope
 from qtpy.QtWidgets import (
     QButtonGroup,
     QFileDialog,
@@ -15,6 +14,7 @@ from qtpy.QtWidgets import (
 )
 
 from ._base_page import ConfigWizardPage
+from ._wizard_model import WizardModel
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ EXISTING_CONFIG = "EXISTING_CONFIG"
 class IntroPage(ConfigWizardPage):
     """First page, for selecting new or existing configuration."""
 
-    def __init__(self, model: Microscope, core: CMMCorePlus):
+    def __init__(self, model: WizardModel, core: CMMCorePlus):
         super().__init__(model, core)
         self.setTitle("Select Configuration File")
         self.setSubTitle(

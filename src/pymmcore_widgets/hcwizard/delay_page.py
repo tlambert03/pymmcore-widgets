@@ -17,7 +17,8 @@ from ._base_page import ConfigWizardPage
 
 if TYPE_CHECKING:
     from pymmcore_plus import CMMCorePlus
-    from pymmcore_plus.model import Device, Microscope
+
+    from ._wizard_model import Device, WizardModel
 
 
 class _DelaySpin(QDoubleSpinBox):
@@ -31,7 +32,7 @@ class _DelaySpin(QDoubleSpinBox):
 class DelayTable(QTableWidget):
     """Simple Property Table."""
 
-    def __init__(self, model: Microscope, parent: QWidget | None = None) -> None:
+    def __init__(self, model: WizardModel, parent: QWidget | None = None) -> None:
         headers = ["", "Label", "Adapter", "Delay [ms]"]
         super().__init__(0, len(headers), parent)
         self._model = model
@@ -75,7 +76,7 @@ class DelayTable(QTableWidget):
 class DelayPage(ConfigWizardPage):
     """Page for setting device delays."""
 
-    def __init__(self, model: Microscope, core: CMMCorePlus):
+    def __init__(self, model: WizardModel, core: CMMCorePlus):
         super().__init__(model, core)
         self.setTitle("Set delays for devices without synchronization capabilities")
         self.setSubTitle(

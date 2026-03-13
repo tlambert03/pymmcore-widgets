@@ -1,7 +1,6 @@
 from typing import cast
 
 from pymmcore_plus import CMMCorePlus, DeviceType
-from pymmcore_plus.model import Device, Microscope
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (
     QComboBox,
@@ -14,10 +13,11 @@ from qtpy.QtWidgets import (
 from superqt.utils import signals_blocked
 
 from ._base_page import ConfigWizardPage
+from ._wizard_model import Device, WizardModel
 
 
 class _LabelTable(QTableWidget):
-    def __init__(self, model: Microscope):
+    def __init__(self, model: WizardModel):
         headers = ["State", "Label"]
         super().__init__(0, len(headers))
         self._model = model
@@ -56,7 +56,7 @@ class _LabelTable(QTableWidget):
 class LabelsPage(ConfigWizardPage):
     """Provide a table for defining position labels for state devices."""
 
-    def __init__(self, model: Microscope, core: CMMCorePlus):
+    def __init__(self, model: WizardModel, core: CMMCorePlus):
         super().__init__(model, core)
         self.setTitle("Define position labels for state devices")
         self.setSubTitle(

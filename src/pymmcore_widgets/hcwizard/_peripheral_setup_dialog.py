@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
-from pymmcore_plus.model import Device, Microscope
 from qtpy.QtCore import QSize, Qt
 from qtpy.QtWidgets import (
     QCheckBox,
@@ -18,6 +17,7 @@ from qtpy.QtWidgets import (
 from superqt.utils import exceptions_as_dialog
 
 from ._dev_setup_dialog import DeviceSetupDialog
+from ._wizard_model import Device, WizardModel
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -31,7 +31,7 @@ class PeripheralSetupDlg(QDialog):
     def __init__(
         self,
         device: Device,
-        model: Microscope,
+        model: WizardModel,
         core: CMMCorePlus,
         parent: QWidget | None = None,
         flags: Qt.WindowType = FLAGS,

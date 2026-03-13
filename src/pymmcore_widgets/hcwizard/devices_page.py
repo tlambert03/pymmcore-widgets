@@ -5,7 +5,6 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, cast
 
 from pymmcore_plus import CMMCorePlus, DeviceType
-from pymmcore_plus.model import AvailableDevice, Device, Microscope
 from qtpy.QtCore import QRegularExpression, Qt, Signal
 from qtpy.QtWidgets import (
     QCheckBox,
@@ -30,6 +29,7 @@ from pymmcore_widgets._icons import StandardIcon
 from ._base_page import ConfigWizardPage
 from ._dev_setup_dialog import DeviceSetupDialog
 from ._peripheral_setup_dialog import PeripheralSetupDlg
+from ._wizard_model import AvailableDevice, Device, WizardModel
 
 if TYPE_CHECKING:
     from qtpy.QtGui import QKeyEvent
@@ -55,7 +55,7 @@ class _DeviceTable(QTableWidget):
         hh.setSectionResizeMode(hh.ResizeMode.ResizeToContents)
         hh.setSectionResizeMode(3, hh.ResizeMode.Stretch)
 
-    def rebuild(self, model: Microscope, errs: dict[str, str] | None = None) -> None:
+    def rebuild(self, model: WizardModel, errs: dict[str, str] | None = None) -> None:
         errs = errs or {}
         self.clearContents()
         self.setRowCount(len(model.devices))
@@ -103,7 +103,7 @@ class _DeviceTable(QTableWidget):
                 item.setToolTip(str(info))
             self.setItem(i, 4, item)
 
-    def _edit_peripherals(self, device: Device, model: Microscope) -> None:
+    def _edit_peripherals(self, device: Device, model: WizardModel) -> None:
         dlg = PeripheralSetupDlg(device, model, self._core, self)
         if dlg.exec():
             self.rebuild(model)
@@ -111,7 +111,7 @@ class _DeviceTable(QTableWidget):
 
 class _CurrentDevicesWidget(QWidget):
     def __init__(
-        self, model: Microscope, core: CMMCorePlus, parent: QWidget | None = None
+        self, model: WizardModel, core: CMMCorePlus, parent: QWidget | None = None
     ) -> None:
         super().__init__(parent)
         self._model = model
@@ -232,7 +232,7 @@ class _AvailableDevicesWidget(QWidget):
 
     touchedModel = Signal()
 
-    def __init__(self, model: Microscope, core: CMMCorePlus):
+    def __init__(self, model: WizardModel, core: CMMCorePlus):
         super().__init__()
         self._model = model
         self._core = core
@@ -438,7 +438,7 @@ class _AvailableDevicesWidget(QWidget):
 class DevicesPage(ConfigWizardPage):
     """Page for adding and removing devices."""
 
-    def __init__(self, model: Microscope, core: CMMCorePlus):
+    def __init__(self, model: WizardModel, core: CMMCorePlus):
         super().__init__(model, core)
         self.setTitle("Add or remove devices")
         self.setSubTitle(

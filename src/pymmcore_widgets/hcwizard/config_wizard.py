@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pymmcore_plus import CMMCorePlus
-from pymmcore_plus.model import Microscope
 from qtpy.QtCore import QSize
 from qtpy.QtWidgets import (
     QFileDialog,
@@ -15,6 +14,7 @@ from qtpy.QtWidgets import (
     QWizard,
 )
 
+from ._wizard_model import WizardModel
 from .delay_page import DelayPage
 from .devices_page import DevicesPage
 from .finish_page import DEST_CONFIG, FinishPage
@@ -49,7 +49,7 @@ class ConfigWizard(QWizard):
     ):
         super().__init__(parent)
         self._core = core or CMMCorePlus.instance()
-        self._model = Microscope()
+        self._model = WizardModel()
         self._model.load_available_devices(self._core)
         self.setWizardStyle(QWizard.WizardStyle.ModernStyle)
 
@@ -83,7 +83,7 @@ class ConfigWizard(QWizard):
         """Return the size hint for the wizard."""
         return super().sizeHint().expandedTo(QSize(750, 600))
 
-    def microscopeModel(self) -> Microscope:
+    def microscopeModel(self) -> WizardModel:
         """Return the microscope model."""
         return self._model
 

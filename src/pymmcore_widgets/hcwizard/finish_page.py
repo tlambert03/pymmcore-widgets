@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from pymmcore_plus import CMMCorePlus
-from pymmcore_plus.model import Microscope
 from qtpy.QtWidgets import (
     QFileDialog,
     QHBoxLayout,
@@ -12,6 +11,7 @@ from qtpy.QtWidgets import (
 )
 
 from ._base_page import ConfigWizardPage
+from ._wizard_model import WizardModel
 
 DEST_CONFIG = "dest_config"
 
@@ -19,7 +19,7 @@ DEST_CONFIG = "dest_config"
 class FinishPage(ConfigWizardPage):
     """Page for saving the configuration file."""
 
-    def __init__(self, model: Microscope, core: CMMCorePlus):
+    def __init__(self, model: WizardModel, core: CMMCorePlus):
         super().__init__(model, core)
         self.setTitle("Save configuration and exit")
         self.setSubTitle("All done!<br><br>Choose where to save your config file.")

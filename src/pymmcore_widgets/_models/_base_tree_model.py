@@ -51,11 +51,7 @@ class _Node:
     def __init__(
         self,
         name: str,
-        payload: ConfigGroup
-        | ConfigPreset
-        | PropertyInfo
-        | DeviceInfo
-        | None = None,
+        payload: ConfigGroup | ConfigPreset | PropertyInfo | DeviceInfo | None = None,
         parent: _Node | None = None,
     ) -> None:
         self.name = name

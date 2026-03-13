@@ -4,11 +4,9 @@ from typing import TYPE_CHECKING
 
 import pytest
 from mmcore_schema.state import PropertyInfo
-from pymmcore_plus import CMMCorePlus
+from pymmcore_plus import CMMCorePlus, core_io
 from qtpy.QtCore import QModelIndex, Qt
 from qtpy.QtGui import QFont, QIcon, QPixmap
-
-from pymmcore_plus import core_io
 
 from pymmcore_widgets._models import (
     ConfigGroup,
@@ -273,9 +271,7 @@ def test_update_preset_properties(model: QConfigGroupsModel, qtbot: QtBot) -> No
     assert len(preset0_new.settings) == 3
 
     # Check that existing settings are preserved with their values
-    settings_by_key = {
-        (s.device_label, s.name): s for s in preset0_new.settings
-    }
+    settings_by_key = {(s.device_label, s.name): s for s in preset0_new.settings}
     assert existing_key1 in settings_by_key
     assert existing_key2 in settings_by_key
     assert ("NewDevice", "NewProperty") in settings_by_key
@@ -405,9 +401,7 @@ def test_pivot_model_two_way_sync(
     updated_groups = model.get_groups()
     updated_camera_group = next(g for g in updated_groups if g.name == "Camera")
     lowres_preset = updated_camera_group.presets["LowRes"]
-    bitdepth_setting = next(
-        s for s in lowres_preset.settings if s.name == "BitDepth"
-    )
+    bitdepth_setting = next(s for s in lowres_preset.settings if s.name == "BitDepth")
     assert bitdepth_setting.value == new_value
 
     # Test 4: Removing presets from source updates pivot

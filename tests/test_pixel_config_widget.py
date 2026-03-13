@@ -21,13 +21,19 @@ if TYPE_CHECKING:
 TEST_VALUE = [
     PixelSizePreset(
         "test_1",
-        [PropertySetting("Camera", "Binning", "1"), PropertySetting("Camera", "BitDepth", "16")],
+        [
+            PropertySetting("Camera", "Binning", "1"),
+            PropertySetting("Camera", "BitDepth", "16"),
+        ],
         0.5,
         (0.5, 0.0, 0.0, 0.0, 0.5, 0.0),
     ),
     PixelSizePreset(
         "test_2",
-        [PropertySetting("Camera", "Binning", "2"), PropertySetting("Camera", "BitDepth", "12")],
+        [
+            PropertySetting("Camera", "Binning", "2"),
+            PropertySetting("Camera", "BitDepth", "12"),
+        ],
         2.0,
         (2, 0.0, 0.0, 0.0, 2, 0.0),
     ),
@@ -43,10 +49,14 @@ def test_pixel_config_wdg(qtbot: QtBot, global_mmcore: CMMCorePlus):
             "Res10x", [PropertySetting("Objective", "Label", "Nikon 10X S Fluor")], 1.0
         ),
         PixelSizePreset(
-            "Res20x", [PropertySetting("Objective", "Label", "Nikon 20X Plan Fluor ELWD")], 0.5
+            "Res20x",
+            [PropertySetting("Objective", "Label", "Nikon 20X Plan Fluor ELWD")],
+            0.5,
         ),
         PixelSizePreset(
-            "Res40x", [PropertySetting("Objective", "Label", "Nikon 40X Plan Fluor ELWD")], 0.25
+            "Res40x",
+            [PropertySetting("Objective", "Label", "Nikon 40X Plan Fluor ELWD")],
+            0.25,
         ),
     ]
 
@@ -165,7 +175,9 @@ def test_pixel_config_wdg_prop_selection(qtbot: QtBot, global_mmcore: CMMCorePlu
 
     wdg._px_table._add_row()
     assert wdg._px_table.value()[-1][ID] == NEW
-    wdg._resID_map[3].settings = [_ps("Objective", "Label", "Nikon 20X Plan Fluor ELWD")]
+    wdg._resID_map[3].settings = [
+        _ps("Objective", "Label", "Nikon 20X Plan Fluor ELWD")
+    ]
 
 
 def test_pixel_config_wdg_prop_change(qtbot: QtBot, global_mmcore: CMMCorePlus):
@@ -236,14 +248,20 @@ def test_pixel_config_wdg_errors(qtbot: QtBot, global_mmcore: CMMCorePlus):
     def _show_msg(msg: str):
         return msg
 
-    wdg.setValue([PixelSizePreset("", [PropertySetting("Camera", "AllowMultiROI", "0")], 0.5)])
+    wdg.setValue(
+        [PixelSizePreset("", [PropertySetting("Camera", "AllowMultiROI", "0")], 0.5)]
+    )
     with patch.object(wdg, "_show_error_message", _show_msg):
         assert wdg._check_for_errors() == "All resolutionIDs must have a name."
 
     wdg.setValue(
         [
-            PixelSizePreset("test", [PropertySetting("Camera", "AllowMultiROI", "0")], 0.5),
-            PixelSizePreset("test", [PropertySetting("Camera", "AllowMultiROI", "1")], 1),
+            PixelSizePreset(
+                "test", [PropertySetting("Camera", "AllowMultiROI", "0")], 0.5
+            ),
+            PixelSizePreset(
+                "test", [PropertySetting("Camera", "AllowMultiROI", "1")], 1
+            ),
         ]
     )
     with patch.object(wdg, "_show_error_message", _show_msg):
@@ -287,6 +305,8 @@ def p_delete_resID(qtbot: QtBot, global_mmcore: CMMCorePlus):
             "Res10x", [PropertySetting("Objective", "Label", "Nikon 10X S Fluor")], 1.0
         ),
         PixelSizePreset(
-            "Res40x", [PropertySetting("Objective", "Label", "Nikon 40X Plan Fluor ELWD")], 0.25
+            "Res40x",
+            [PropertySetting("Objective", "Label", "Nikon 40X Plan Fluor ELWD")],
+            0.25,
         ),
     ]

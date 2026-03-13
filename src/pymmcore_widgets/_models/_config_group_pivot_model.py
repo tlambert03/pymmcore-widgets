@@ -2,13 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from mmcore_schema.state import ConfigPreset, PropertyInfo
 from qtpy.QtCore import QAbstractTableModel, QModelIndex, QSize, Qt
 
 from pymmcore_widgets._icons import StandardIcon
-
-from mmcore_schema.state import PropertyInfo
-
-from mmcore_schema.state import ConfigPreset
 
 from ._q_config_model import QConfigGroupsModel
 
@@ -117,11 +114,7 @@ class ConfigGroupPivotModel(QAbstractTableModel):
             if not node:
                 return  # pragma: no cover
             self._presets = [child.payload for child in node.children]
-            keys = (
-                (s.device_label, s.name)
-                for p in self._presets
-                for s in p.settings
-            )
+            keys = ((s.device_label, s.name) for p in self._presets for s in p.settings)
             self._rows = list(dict.fromkeys(keys, None))  # unique (device, prop) pairs
 
             self._data.clear()

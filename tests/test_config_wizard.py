@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 import pytest
-from pymmcore_widgets.hcwizard._wizard_model import WizardModel
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QCloseEvent, QFocusEvent
 
 from pymmcore_widgets.hcwizard import devices_page
 from pymmcore_widgets.hcwizard._dev_setup_dialog import DeviceSetupDialog
 from pymmcore_widgets.hcwizard._peripheral_setup_dialog import PeripheralSetupDlg
+from pymmcore_widgets.hcwizard._wizard_model import WizardModel
 from pymmcore_widgets.hcwizard.config_wizard import (
     ConfigWizard,
     QFileDialog,

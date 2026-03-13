@@ -440,9 +440,7 @@ class QConfigGroupsModel(_BaseTreeModel):
         setting_keys = set(settings)
 
         # Create a dict of existing settings keyed by (device_label, name)
-        existing_settings = {
-            (s.device_label, s.name): s for s in preset.settings
-        }
+        existing_settings = {(s.device_label, s.name): s for s in preset.settings}
 
         # Build the final list of settings
         final_settings: list[PropertyInfo] = []
@@ -450,9 +448,7 @@ class QConfigGroupsModel(_BaseTreeModel):
             if key in existing_settings:
                 final_settings.append(existing_settings[key])
             else:
-                final_settings.append(
-                    PropertyInfo(name=key[1], device_label=key[0])
-                )
+                final_settings.append(PropertyInfo(name=key[1], device_label=key[0]))
 
         # Use the existing method to update the preset with the final settings
         self.update_preset_settings(preset_idx, final_settings)

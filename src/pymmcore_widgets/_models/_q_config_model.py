@@ -6,7 +6,6 @@ from enum import IntEnum
 from typing import TYPE_CHECKING, Any, cast
 
 from mmcore_schema.state import ConfigGroup, ConfigPreset, PropertyInfo
-from pymmcore_plus import core_io
 from qtpy.QtCore import QModelIndex, Qt
 from qtpy.QtGui import QFont, QIcon
 from superqt import QIconifyIcon
@@ -46,7 +45,7 @@ class QConfigGroupsModel(_BaseTreeModel):
 
     @classmethod
     def create_from_core(cls, core: CMMCorePlus) -> Self:
-        return cls(core_io.read_config_groups(core, enrich=True))
+        return cls(ConfigGroup.all_from_core(core, enrich=True))
 
     def __init__(self, groups: Iterable[ConfigGroup] | None = None) -> None:
         super().__init__()

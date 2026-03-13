@@ -1,14 +1,10 @@
+from mmcore_schema.state import ConfigGroup, DeviceInfo
 from pymmcore_plus import CMMCorePlus
-from pymmcore_plus.core_io import (
-    read_available_devices,
-    read_config_groups,
-    read_devices,
-)
 
 
 def test_get_loaded_devices() -> None:
     core = CMMCorePlus()
     core.loadSystemConfiguration()
-    read_devices(core)
-    read_available_devices(core)
-    read_config_groups(core)
+    DeviceInfo.all_from_core(core)
+    DeviceInfo.available_from_core(core)
+    ConfigGroup.all_from_core(core)

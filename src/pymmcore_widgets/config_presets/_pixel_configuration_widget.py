@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any, cast
 from mmcore_schema import PropertySetting
 from mmcore_schema.state import PixelSizePreset
 from pymmcore_plus import CMMCorePlus, DeviceProperty
-from pymmcore_plus.core_io import apply_pixel_size_preset, read_pixel_size_presets
 from qtpy.QtCore import Qt, Signal
 from qtpy.QtWidgets import (
     QAbstractSpinBox,
@@ -206,7 +205,7 @@ class PixelConfigurationWidget(QWidget):
         self._px_table._remove_all()
         self._resID_map.clear()
 
-        px_presets = read_pixel_size_presets(self._mmc)
+        px_presets = PixelSizePreset.all_from_core(self._mmc)
         if not px_presets:
             self._props_selector._prop_table.uncheckAll()
             self._props_selector.setEnabled(False)
@@ -405,7 +404,7 @@ class PixelConfigurationWidget(QWidget):
 
         # create the new pixel size configurations
         for preset in self.value():
-            apply_pixel_size_preset(self._mmc, preset)
+            preset.apply_to_core(self._mmc)
         self.close()
 
     def _check_for_errors(self) -> bool:

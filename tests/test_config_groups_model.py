@@ -4,7 +4,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 from mmcore_schema.state import PropertyInfo
-from pymmcore_plus import CMMCorePlus, core_io
+from mmcore_schema.state import ConfigGroup as StateConfigGroup
+from pymmcore_plus import CMMCorePlus
 from qtpy.QtCore import QModelIndex, Qt
 from qtpy.QtGui import QFont, QIcon, QPixmap
 
@@ -34,7 +35,7 @@ def test_model_initialization() -> None:
     # not using the fixture here, as we want to test the model creation directly
     core = CMMCorePlus()
     core.loadSystemConfiguration()
-    python_info = list(core_io.read_config_groups(core, enrich=True))
+    python_info = list(StateConfigGroup.all_from_core(core, enrich=True))
     model = QConfigGroupsModel(python_info)
 
     assert isinstance(model, QConfigGroupsModel)

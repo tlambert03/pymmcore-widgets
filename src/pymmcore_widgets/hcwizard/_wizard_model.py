@@ -2,7 +2,7 @@
 
 These replace the dependency on pymmcore_plus.model (Microscope, Device, etc.)
 for the hardware configuration wizard, using mmcore_schema.MMConfig for file I/O
-and pymmcore_plus.core_io for device reads.
+and mmcore_schema.state for device reads.
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from mmcore_schema.state import DeviceInfo as _StateDeviceInfo
 from pymmcore_plus import (
     CMMCorePlus,
     DeviceInitializationState,
@@ -22,7 +23,6 @@ from pymmcore_plus import (
     FocusDirection,
     Keyword,
     PropertyType,
-    core_io,
 )
 from pymmcore_plus._util import no_stdout
 
@@ -133,7 +133,7 @@ class Device:
         cls, core: CMMCorePlus, *, name: str, initialized: bool = False
     ) -> Device:
         """Create a Device by reading its state from core."""
-        info = core_io.read_device_info(core, name)
+        info = _StateDeviceInfo.from_core(core, name)
         dev = cls(
             name=info.label,
             library=info.library,
@@ -153,7 +153,7 @@ class Device:
 
     def update_from_core(self, core: CMMCorePlus) -> None:
         """Refresh device state from core."""
-        info = core_io.read_device_info(core, self.name)
+        info = _StateDeviceInfo.from_core(core, self.name)
         self.library = info.library
         self.adapter_name = info.name
         self.description = info.description

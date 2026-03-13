@@ -72,7 +72,7 @@ class ConfigGroupPivotModel(QAbstractTableModel):
         # Create or update the setting
         # Update our local data
         self._data[(row, col)] = setting = DevicePropertySetting(
-            device=dev_prop[0], property_name=dev_prop[1], value=str(value)
+            device_label=dev_prop[0], property_name=dev_prop[1], value=str(value)
         )
 
         # Update the preset's settings list

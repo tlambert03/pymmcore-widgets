@@ -226,7 +226,7 @@ def test_update_preset_settings(model: QConfigGroupsModel, qtbot: QtBot) -> None
     preset0_index = model.index(0, 0, grp0_index)
     new_settings = [
         DevicePropertySetting(
-            device="NewDevice", property_name="NewProperty", value="NewValue"
+            device_label="NewDevice", property_name="NewProperty", value="NewValue"
         )
     ]
     model.update_preset_settings(preset0_index, new_settings)
@@ -373,8 +373,12 @@ def test_pivot_model_two_way_sync(
 
     # Add a setting to the new preset
     test_settings = [
-        DevicePropertySetting(device="Camera", property_name="Binning", value="8"),
-        DevicePropertySetting(device="Camera", property_name="BitDepth", value="14"),
+        DevicePropertySetting(
+            device_label="Camera", property_name="Binning", value="8"
+        ),
+        DevicePropertySetting(
+            device_label="Camera", property_name="BitDepth", value="14"
+        ),
     ]
     model.update_preset_settings(new_preset_idx, test_settings)
 
@@ -428,7 +432,7 @@ def test_pivot_model_two_way_sync(
     new_settings = [
         *medres_preset.settings,
         DevicePropertySetting(
-            device="Camera", property_name="NewProperty", value="NewValue"
+            device_label="Camera", property_name="NewProperty", value="NewValue"
         ),
     ]
     model.update_preset_settings(medres_preset_idx, new_settings)

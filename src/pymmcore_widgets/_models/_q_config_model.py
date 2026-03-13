@@ -128,7 +128,7 @@ class QConfigGroupsModel(_BaseTreeModel):
             args[index.column()] = str(value)
             node.name = f"{args[0]}-{args[1]}"
             node.payload = new_setting = DevicePropertySetting(
-                device=args[0], property_name=args[1], value=args[2]
+                device_label=args[0], property_name=args[1], value=args[2]
             )
 
             # also update the parent preset.settings list reference
@@ -436,7 +436,7 @@ class QConfigGroupsModel(_BaseTreeModel):
                 final_settings.append(existing_settings[key])
             else:
                 final_settings.append(
-                    DevicePropertySetting(device=key[0], property_name=key[1])
+                    DevicePropertySetting(device_label=key[0], property_name=key[1])
                 )
 
         # Use the existing method to update the preset with the final settings

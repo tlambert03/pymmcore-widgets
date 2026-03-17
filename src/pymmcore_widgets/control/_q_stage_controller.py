@@ -18,16 +18,19 @@ class QStageMoveAccumulator(QObject):
 
     Attributes
     ----------
-    moveFinished : Signal
-        Emitted when the move is finished. This is a signal that can be connected to
-        other slots to perform actions after the move is completed.
+    moveFinished : Signal(object)
+        Emitted when the move is finished, with the current device position.
+    positionPolled : Signal(object)
+        Emitted on each poll tick while a move is in progress, with the current
+        device position.
     snap_on_finish : bool
         If True, a snap will be performed after the move is finished.  Prefer using
         this to connecting a callback to the `moveFinished` signal, so that multiple
         snaps can be avoided if multiple widgets are connected to the signal.
     """
 
-    moveFinished = Signal()
+    moveFinished = Signal(object)
+    positionPolled = Signal(object)
     snap_on_finish: bool = False
 
     @classmethod
@@ -79,6 +82,8 @@ class QStageMoveAccumulator(QObject):
             # If an error occurs while polling, stop the timer.
             done_polling = True
 
+        pos = self._accum._get_value()
+
         if done_polling is True:
             if self._timer_id is not None:
                 self.killTimer(self._timer_id)
@@ -91,4 +96,6 @@ class QStageMoveAccumulator(QObject):
                         _core.snapImage()
                 self.snap_on_finish = False
 
-            self.moveFinished.emit()
+            self.moveFinished.emit(pos)
+        else:
+            self.positionPolled.emit(pos)

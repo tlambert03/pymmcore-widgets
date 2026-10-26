@@ -144,8 +144,16 @@ def screenshot(app: QApplication, widget: str, example: Path, dark: bool) -> str
     ns = {"__name__": "__main__", "__file__": str(example)}
     faulthandler.dump_traceback_later(TIMEOUT, exit=True)
     try:
-        exec(compile(example.read_text(encoding="utf-8"), str(example), "exec"), ns)
-        _settle(app)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            code = compile(example.read_text(encoding="utf-8"), str(example), "exec")
+            exec(code, ns)
+            _settle(app)
+        # superqt draws a "?" for icons it can't fetch from the Iconify API
+        if failed := [
+            str(w.message) for w in caught if "fetching icon" in str(w.message)
+        ]:
+            return f"{len(failed)} icon(s) not fetched: {failed[0]}"
         shown = [
             w
             for w in app.topLevelWidgets()

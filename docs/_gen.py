@@ -2,25 +2,37 @@
 
 For every widget listed in docs/widget_list.json this writes (all gitignored):
 
-- docs/images/generated/<snake>.png   screenshot from examples/<snake>.py
-- docs/api/pymmcore_widgets/<W>.md    the widget's API page (screenshot, API, example)
-- docs/_generated/<category>.md       gallery cards, included by docs/widgets/index.md
+- docs/images/generated/<snake>.png       screenshot from examples/<snake>.py
+- docs/images/generated/<snake>-dark.png  the same, in dark mode
+- docs/api/pymmcore_widgets/<W>.md        API page (screenshot, API, example)
+- docs/_generated/<category>.md           gallery cards, for docs/widgets/index.md
 
-Screenshots run each example in a subprocess with Qt's offscreen platform, and are
-only regenerated when the example changed (or with --force).
+All examples run in this process (with Qt's offscreen platform, unless
+QT_QPA_PLATFORM says otherwise), sharing one QApplication.  Screenshots are only
+regenerated when the example changed (or with --force).
 """
 
 from __future__ import annotations
 
 import argparse
+import faulthandler
+import gc
 import json
 import os
 import re
-import subprocess
 import sys
 import time
-from concurrent.futures import ThreadPoolExecutor
+import traceback
+import warnings
 from pathlib import Path
+
+import pymmcore_plus.core._mmcore_plus as mmcore_plus_module
+from qtpy import QtWidgets
+from qtpy.QtCore import QEvent, Qt
+from qtpy.QtGui import QColor, QPalette
+from qtpy.QtWidgets import QApplication, QWidget
+
+import pymmcore_widgets
 
 DOCS = Path(__file__).parent
 ROOT = DOCS.parent
@@ -32,6 +44,9 @@ WIDGET_LIST = DOCS / "widget_list.json"
 REPO = "https://github.com/pymmcore-plus/pymmcore-widgets"
 # widgets whose example file doesn't follow the CamelCase -> snake_case rule
 EXAMPLE_NAMES = {"StageExplorer": "stage_explorer_widget"}
+# top-level widgets that are never the one to capture (popups)
+SKIP = {"QFrame", "QMenu"}
+TIMEOUT = 120  # seconds, per example
 
 PAGE = """\
 ---
@@ -52,7 +67,7 @@ edit_url: {edit_url}
 
 FIGURE = """\
 <figure markdown>
-  ![{widget}](../../images/generated/{snake}.png){{ loading=lazy, .widget-image }}
+  {images}
   <figcaption>
     Screenshot generated from the <a href="#example">example below</a>.
   </figcaption>
@@ -68,6 +83,13 @@ EXAMPLE = """\
 """
 
 
+class _SharedApp(QApplication):
+    """What examples get as `QApplication`: the app that is already running."""
+
+    def __new__(cls, *args: object, **kwargs: object) -> QApplication:
+        return QApplication.instance()
+
+
 def _snake(name: str) -> str:
     if name in EXAMPLE_NAMES:
         return EXAMPLE_NAMES[name]
@@ -75,59 +97,97 @@ def _snake(name: str) -> str:
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
-def screenshot(widget: str, example: Path, dest: Path) -> None:
-    """Run `example` (in this process) and save a grab of `widget`."""
-    from qtpy.QtWidgets import QApplication
+def _image(widget: str, dark: bool) -> Path:
+    return IMAGES / f"{_snake(widget)}{'-dark' if dark else ''}.png"
 
-    QApplication.exec = QApplication.exec_ = lambda *_: 0  # type: ignore
-    ns = {"__name__": "__main__", "__file__": str(example)}
-    exec(compile(example.read_text(encoding="utf-8"), str(example), "exec"), ns)
-    app = QApplication.instance()
+
+def _settle(app: QApplication) -> None:
     for _ in range(5):
         app.processEvents()
-    skip = {"QFrame", "QMenu"}
-    tops = [
-        w
-        for w in app.topLevelWidgets()
-        if w.isVisible() and type(w).__name__ not in skip
-    ]
-    if not tops:
-        raise RuntimeError(f"{example.name} showed no widget")
-    target = next((w for w in tops if type(w).__name__ == widget), tops[0])
-    target.setMinimumWidth(300)  # turns out this is very important for grab
-    app.processEvents()
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    target.grab().save(str(dest))
 
 
-def _shoot(widget: str, force: bool) -> str | None:
-    example = EXAMPLES / f"{_snake(widget)}.py"
-    dest = IMAGES / f"{_snake(widget)}.png"
-    if not example.exists():
-        return f"{widget}: no example at {example.relative_to(ROOT)}"
-    if dest.exists() and not force and dest.stat().st_mtime > example.stat().st_mtime:
-        return None
-    # offscreen by default (no windows popping up); CI may choose a native platform
-    env = {"QT_QPA_PLATFORM": "offscreen", **os.environ, "PYMM_LOG_FILE": "0"}
+def _set_scheme(app: QApplication, dark: bool) -> None:
+    """Switch the app to light or dark mode."""
+    scheme = Qt.ColorScheme.Dark if dark else Qt.ColorScheme.Light
+    app.styleHints().setColorScheme(scheme)
+    if app.styleHints().colorScheme() != scheme:
+        # the platform can't switch (e.g. offscreen): use a dark palette instead
+        palette = QPalette(QColor(53, 53, 53))
+        palette.setColor(QPalette.ColorRole.Base, QColor(35, 35, 35))
+        for role in ("WindowText", "Text", "ButtonText", "PlaceholderText"):
+            role = getattr(QPalette.ColorRole, role)
+            palette.setColor(QPalette.ColorGroup.Disabled, role, QColor(120, 120, 120))
+        app.setPalette(palette if dark else app.style().standardPalette())
+    _settle(app)
+
+
+def start_app() -> QApplication:
+    """Create the QApplication that every example will share."""
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")  # no windows popping up
+    faulthandler.enable()  # if an example crashes the process, show where
+    app = QApplication([])
+    QApplication.exec = QApplication.exec_ = lambda *_: 0  # type: ignore
+    QtWidgets.QApplication = _SharedApp
+    return app
+
+
+def screenshot(app: QApplication, widget: str, example: Path, dark: bool) -> str | None:
+    """Run `example` in light or dark mode, save a grab of `widget`, and clean up.
+
+    Returns a description of the problem, if any.
+    """
+    before = set(app.topLevelWidgets())
+    # each example gets its own global core (the first CMMCorePlus it creates)
+    mmcore_plus_module._instance = None
+    # set before the example runs: some widgets pick their colors when created
+    _set_scheme(app, dark)
+    ns = {"__name__": "__main__", "__file__": str(example)}
+    faulthandler.dump_traceback_later(TIMEOUT, exit=True)
     try:
-        subprocess.run(
-            [sys.executable, __file__, "--shoot", widget, str(example), str(dest)],
-            env=env,
-            check=True,
-            timeout=120,
-            capture_output=True,
-            text=True,
-        )
-    except subprocess.CalledProcessError as e:
-        return f"{widget}: screenshot failed\n{e.stderr[-1500:]}"
-    except subprocess.TimeoutExpired:
-        return f"{widget}: screenshot timed out"
+        exec(compile(example.read_text(encoding="utf-8"), str(example), "exec"), ns)
+        _settle(app)
+        shown = [
+            w
+            for w in app.topLevelWidgets()
+            if w not in before and w.isVisible() and type(w).__name__ not in SKIP
+        ]
+        if not shown:
+            return f"{example.name} showed no widget"
+        target = next((w for w in shown if type(w).__name__ == widget), shown[0])
+        target.setMinimumWidth(300)  # turns out this is very important for grab
+        target.activateWindow()  # as if it were the only window (active styling)
+        _settle(app)
+        IMAGES.mkdir(parents=True, exist_ok=True)
+        target.grab().save(str(_image(widget, dark)))
+    except Exception:
+        return f"screenshot failed\n{traceback.format_exc(limit=-3)}"
+    finally:
+        faulthandler.cancel_dump_traceback_later()
+        for w in app.topLevelWidgets():
+            # popups are windows too, but get deleted with their parent widget
+            if w not in before and w.parent() is None:
+                w.close()
+                w.deleteLater()
+        ns.clear()
+        app.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+        gc.collect()
     return None
 
 
-def _summary(widget: str) -> str:
-    import pymmcore_widgets
+def _image_md(widget: str, prefix: str, attrs: str) -> str:
+    """Markdown for the screenshot, switching with the site's light/dark theme."""
+    light, dark = _image(widget, dark=False), _image(widget, dark=True)
+    if not light.exists():
+        return ""
+    if not dark.exists():
+        return f"![{widget}]({prefix}{light.name}){{ {attrs} }}"
+    return (
+        f"![{widget}]({prefix}{light.name}#only-light){{ {attrs} }}"
+        f"![{widget}]({prefix}{dark.name}#only-dark){{ {attrs} }}"
+    )
 
+
+def _summary(widget: str) -> str:
     doc = (getattr(pymmcore_widgets, widget).__doc__ or "").strip()
     return " ".join(doc.split("\n\n")[0].split())
 
@@ -139,26 +199,25 @@ def write_pages(categories: dict[str, list[str]]) -> None:
         cards = ['<div class="grid cards pymm-gallery" markdown>', ""]
         for widget in widgets:
             snake = _snake(widget)
-            has_img = (IMAGES / f"{snake}.png").exists()
             has_example = (EXAMPLES / f"{snake}.py").exists()
             edit_url = (
                 f"{REPO}/edit/main/examples/{snake}.py"
                 if has_example
                 else f"{REPO}/tree/main/src/pymmcore_widgets"
             )
+            figure = _image_md(
+                widget, "../../images/generated/", "loading=lazy .widget-image"
+            )
             page = PAGE.format(
                 widget=widget,
                 edit_url=edit_url,
-                figure=FIGURE.format(widget=widget, snake=snake) if has_img else "",
+                figure=FIGURE.format(images=figure) if figure else "",
                 example=EXAMPLE.format(snake=snake) if has_example else "",
             )
             (API / f"{widget}.md").write_text(page, encoding="utf-8")
-            img = (
-                f"[![{widget}](../images/generated/{snake}.png){{ loading=lazy }}]"
-                f"(../api/pymmcore_widgets/{widget}.md)\n\n    "
-                if has_img
-                else ""
-            )
+            img = _image_md(widget, "../images/generated/", "loading=lazy")
+            if img:
+                img = f"[{img}](../api/pymmcore_widgets/{widget}.md)\n\n    "
             cards += [
                 f"-   {img}[**`{widget}`**](../api/pymmcore_widgets/{widget}.md)",
                 "",
@@ -170,12 +229,6 @@ def write_pages(categories: dict[str, list[str]]) -> None:
 
 
 def check_coverage(categories: dict[str, list[str]]) -> list[str]:
-    import warnings
-
-    from qtpy.QtWidgets import QWidget
-
-    import pymmcore_widgets
-
     listed = {w for ws in categories.values() for w in ws}
     exported = set()
     for name in pymmcore_widgets.__all__:
@@ -196,29 +249,41 @@ def main() -> None:
     parser.add_argument(
         "--force", action="store_true", help="regenerate all screenshots"
     )
-    parser.add_argument("--shoot", nargs=3, metavar=("WIDGET", "EXAMPLE", "DEST"))
     ns = parser.parse_args()
-    if ns.shoot:
-        widget, example, dest = ns.shoot
-        return screenshot(widget, Path(example), Path(dest))
 
     categories: dict[str, list[str]] = json.loads(
         WIDGET_LIST.read_text(encoding="utf-8")
     )
     widgets = [w for ws in categories.values() for w in ws]
-    with ThreadPoolExecutor(max_workers=min(8, os.cpu_count() or 2)) as pool:
-        shots = pool.map(lambda w: _shoot(w, ns.force), widgets)
-        results = dict(zip(widgets, shots, strict=True))
-    # Retry failures one at a time, backing off: some widgets fetch icons from the
-    # Iconify API (via pyconify), which may refuse a burst of parallel requests.
-    for delay in (15, 45):
-        failed = [w for w, p in results.items() if p and "no example" not in p]
-        if not failed:
-            break
-        time.sleep(delay)
-        for widget in failed:
-            results[widget] = _shoot(widget, ns.force)
-    problems = [p for p in results.values() if p]
+    problems: list[str] = []
+    shots: dict[tuple[str, bool], Path] = {}  # (widget, dark) -> example
+    for widget in widgets:
+        example = EXAMPLES / f"{_snake(widget)}.py"
+        if not example.exists():
+            problems.append(f"{widget}: no example at {example.relative_to(ROOT)}")
+            continue
+        mtime = example.stat().st_mtime
+        for dark in (False, True):
+            img = _image(widget, dark)
+            if ns.force or not img.exists() or img.stat().st_mtime < mtime:
+                shots[(widget, dark)] = example
+
+    if shots:
+        app = start_app()
+        results = {(w, d): screenshot(app, w, ex, d) for (w, d), ex in shots.items()}
+        # Retry failures once, after a pause: some widgets fetch icons from the
+        # Iconify API (via pyconify), which may fail transiently.
+        if failed := [shot for shot, problem in results.items() if problem]:
+            time.sleep(10)
+            results.update(
+                {(w, d): screenshot(app, w, shots[w, d], d) for w, d in failed}
+            )
+        problems += [
+            f"{widget}{' (dark)' if dark else ''}: {problem}"
+            for (widget, dark), problem in results.items()
+            if problem
+        ]
+
     write_pages(categories)
     problems += check_coverage(categories)
     for p in problems:

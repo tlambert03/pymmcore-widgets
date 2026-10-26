@@ -206,7 +206,13 @@ def main() -> None:
     )
     widgets = [w for ws in categories.values() for w in ws]
     with ThreadPoolExecutor(max_workers=min(8, os.cpu_count() or 2)) as pool:
-        problems = [p for p in pool.map(lambda w: _shoot(w, ns.force), widgets) if p]
+        shots = pool.map(lambda w: _shoot(w, ns.force), widgets)
+        results = dict(zip(widgets, shots, strict=True))
+    # retry failures one at a time (e.g. transient errors fetching icons online)
+    for widget, problem in results.items():
+        if problem and "no example" not in problem:
+            results[widget] = _shoot(widget, ns.force)
+    problems = [p for p in results.values() if p]
     write_pages(categories)
     problems += check_coverage(categories)
     for p in problems:

@@ -18,6 +18,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -208,9 +209,14 @@ def main() -> None:
     with ThreadPoolExecutor(max_workers=min(8, os.cpu_count() or 2)) as pool:
         shots = pool.map(lambda w: _shoot(w, ns.force), widgets)
         results = dict(zip(widgets, shots, strict=True))
-    # retry failures one at a time (e.g. transient errors fetching icons online)
-    for widget, problem in results.items():
-        if problem and "no example" not in problem:
+    # Retry failures one at a time, backing off: some widgets fetch icons from the
+    # Iconify API (via pyconify), which may refuse a burst of parallel requests.
+    for delay in (15, 45):
+        failed = [w for w, p in results.items() if p and "no example" not in p]
+        if not failed:
+            break
+        time.sleep(delay)
+        for widget in failed:
             results[widget] = _shoot(widget, ns.force)
     problems = [p for p in results.values() if p]
     write_pages(categories)

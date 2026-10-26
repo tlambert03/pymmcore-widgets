@@ -49,6 +49,6 @@ uv run pytest
 
 ### Docs
 
-```sh
-uv run --group docs mkdocs serve
-```
+The docs live in `docs/` and are published as part of the unified
+[pymmcore-plus docs](https://pymmcore-plus.github.io).  To preview them, see
+[How these docs work](https://pymmcore-plus.github.io/contributing/docs/).

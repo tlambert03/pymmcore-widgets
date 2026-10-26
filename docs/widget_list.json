@@ -6,7 +6,9 @@
     "ObjectivesPixelConfigurationWidget",
     "ConfigurationWidget",
     "PresetsWidget",
-    "ConfigWizard"
+    "ConfigWizard",
+    "ConfigGroupsEditor",
+    "ConfigGroupsTree"
   ],
   "device_property_widgets": [
     "PropertyBrowser",
@@ -20,7 +22,8 @@
     "TimePlanWidget",
     "ZPlanWidget",
     "GridPlanWidget",
-    "MDASequenceWidget"
+    "MDASequenceWidget",
+    "HCSWizard"
   ],
   "camera_widgets": [
     "CameraRoiWidget",
@@ -28,7 +31,8 @@
     "ExposureWidget"
   ],
   "stage_widgets": [
-    "StageWidget"
+    "StageWidget",
+    "StageExplorer"
   ],
   "shutter_widgets": [
     "ShuttersWidget"

@@ -79,7 +79,6 @@ test = [
     "pytest-xdist>=3.8.0",
 ]
 dev = [
-    { include-group = "docs" },
     { include-group = "test" },
     "ipython>=8.18.1",
     "mypy>=1.15.0",
@@ -89,15 +88,6 @@ dev = [
     "rich>=14.0.0",
     "ruff>=0.11.8",
     "types-shapely>=2.1.0.20250512",
-]
-docs = [
-    "mkdocs>=1.6.1",
-    "mkdocs-gen-files>=0.5.0",
-    "mkdocs-literate-nav>=0.6.2",
-    "mkdocs-material>=9.6.12",
-    "mkdocs-section-index>=0.3.10",
-    "mkdocs-video>=1.5.0",
-    "mkdocstrings-python>=1.16.10",
 ]
 
 [tool.uv.sources]
@@ -191,7 +181,7 @@ ignore = [
     ".pre-commit-config.yaml",
     "tests/**/*",
     "docs/**/*",
-    "mkdocs.yml",
+    "zensical.toml",
     "examples/**/*",
     "CHANGELOG.md",
     "uv.lock",

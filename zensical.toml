@@ -1,0 +1,28 @@
+# pymmcore-widgets docs are published as part of the unified pymmcore-plus site,
+# composed by https://github.com/pymmcore-plus/pymmcore-plus.github.io.
+# Theme and global settings live there; this file holds what pymmcore-widgets owns.
+# docs/_gen.py generates screenshots and per-widget pages before the build.
+[project]
+site_name = "pymmcore-widgets"
+site_url = "https://pymmcore-plus.github.io/pymmcore-widgets/"
+repo_url = "https://github.com/pymmcore-plus/pymmcore-widgets"
+edit_uri = "edit/main/docs/"
+
+[project.plugins.awesome-nav]
+
+[project.plugins.mkdocs-video]
+is_video = true
+video_muted = true
+video_controls = false
+video_autoplay = true
+video_loop = true
+
+[project.plugins.api-autonav]
+modules = ["src/pymmcore_widgets"]
+api_root_uri = "api"
+
+[project.plugins.mkdocstrings.handlers.python]
+paths = ["src"]
+
+[project.plugins.mkdocstrings.handlers.python.options]
+docstring_style = "numpy"

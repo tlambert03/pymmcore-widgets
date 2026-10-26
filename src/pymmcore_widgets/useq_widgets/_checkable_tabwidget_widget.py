@@ -18,13 +18,9 @@ class CheckableTabWidget(QTabWidget):
     ----------
     parent : QWidget | None
         Optional parent widget. By default, None.
-    checkbox_position : QTabBar.ButtonPosition
-        The position of the tab QCheckbox. By default, QTabBar.ButtonPosition.LeftSide.
     change_tab_on_check : bool
         Whether to change and select the tab when the respective QCheckbox is checked.
         By default, True.
-    movable : bool
-        Whether the tabs are movable. By default, True.
     """
 
     tabChecked = Signal(int, bool)

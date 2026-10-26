@@ -4,7 +4,7 @@
 ([github](https://github.com/pymmcore-plus/pymmcore-widgets)) is a library of
 [PyQt](https://riverbankcomputing.com/software/pyqt/)/[PySide](https://www.qt.io/qt-for-python)
 widgets that can be used in combination with
-[pymmcore-plus](https://pymmcore-plus.github.io/pymmcore-plus)
+[pymmcore-plus](../pymmcore-plus/index.md)
 ([github](https://github.com/pymmcore-plus/pymmcore-plus)) to create custom Graphical User
 Interfaces (GUIs) for the [Micro-Manager](https://micro-manager.org) software in a pure python/C++
 environment.
@@ -27,11 +27,11 @@ For a more detailed description on how to install the package, see the [Getting 
 
 As a quick example, let's create a simple Qt Application that:
 
-- creates a [Micro-Manager core instance](https://pymmcore-plus.github.io/pymmcore-plus/api/cmmcoreplus/#pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance) so that all the widgets can control the same core.
+- creates a [Micro-Manager core instance][pymmcore_plus.CMMCorePlus.instance] so that all the widgets can control the same core.
 
 - loads the default `Micro-Manager` system configuration.
 
-- creates and shows a [PropertyBrowser](widgets/PropertyBrowser.md) widget. You can use this widget to view and modify the properties of any of the loaded devices.
+- creates and shows a [PropertyBrowser][pymmcore_widgets.PropertyBrowser] widget. You can use this widget to view and modify the properties of any of the loaded devices.
 
 ```py
 # import the necessary packages
@@ -65,8 +65,8 @@ The code above will create a Qt Application that looks like this:
 
 A more detailed description on how to use the `pymmcore-widgets` package is explained in the [Getting Started](getting_started.md#usage) section.
 
-For a pre-made user interface, see [napari-micromanager](https://pypi.org/project/napari-micromanager/) ([github](https://github.com/pymmcore-plus/napari-micromanager)).
+For a ready-made application, see [pymmcore-gui](../pymmcore-gui/index.md) or [napari-micromanager](../napari-micromanager/index.md).
 
 ## Widgets
 
-For a complete list of widgets offered by this package, see the [Widgets List](widgets).
+For a complete list of widgets offered by this package, see the [widget gallery](widgets/index.md).

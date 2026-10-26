@@ -1,0 +1,7 @@
+# Navigation for pymmcore-widgets' reference section in the unified docs.
+# getting_started.md and the gallery (widgets/) are placed into the site-wide
+# User Guide by the hub: pymmcore-plus/pymmcore-plus.github.io
+title: pymmcore-widgets
+nav:
+  - Overview: index.md
+  - api/pymmcore_widgets

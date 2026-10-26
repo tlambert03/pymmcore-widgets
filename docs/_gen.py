@@ -271,10 +271,12 @@ def main() -> None:
     if shots:
         app = start_app()
         results = {(w, d): screenshot(app, w, ex, d) for (w, d), ex in shots.items()}
-        # Retry failures once, after a pause: some widgets fetch icons from the
-        # Iconify API (via pyconify), which may fail transiently.
-        if failed := [shot for shot, problem in results.items() if problem]:
-            time.sleep(10)
+        # Retry failures, after a pause: some widgets fetch icons from the Iconify
+        # API (via pyconify), which may refuse requests for a while (rate limits).
+        for delay in (15, 45):
+            if not (failed := [shot for shot, problem in results.items() if problem]):
+                break
+            time.sleep(delay)
             results.update(
                 {(w, d): screenshot(app, w, shots[w, d], d) for w, d in failed}
             )

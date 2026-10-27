@@ -20,12 +20,12 @@ COLOR_TYPES = Union[
 
 
 class SnapButton(QPushButton):
-    """Create a snap QPushButton.
+    """Button that snaps an image with the current camera.
 
-    This button is linked to the
-    [`CMMCorePlus.snap`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.snap] method.
-    Once the button is clicked, an image is acquired and the `pymmcore-plus`
-    signal [`imageSnapped`]() is emitted.
+    Clicking it calls [`CMMCorePlus.snap`][pymmcore_plus.CMMCorePlus.snap] in a
+    separate thread (so the GUI stays responsive), which emits the
+    [`imageSnapped`][pymmcore_plus.PCoreSignaler.imageSnapped] event.  If live mode
+    is running, it is stopped first.
 
     Parameters
     ----------
@@ -35,13 +35,10 @@ class SnapButton(QPushButton):
         Optional [`pymmcore_plus.CMMCorePlus`][] micromanager core.
         By default, None. If not specified, the widget will use the active
         (or create a new)
-        [`CMMCorePlus.instance`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance].
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
 
-    Examples
-    --------
-    !!! example "Combining `SnapButton` with other widgets"
-
-        see [ImagePreview](ImagePreview.md#example)
+    See the [`ImagePreview`][pymmcore_widgets.ImagePreview] example for this
+    widget combined with an image preview and other controls.
     """
 
     def __init__(

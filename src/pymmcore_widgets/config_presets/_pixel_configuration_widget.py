@@ -64,7 +64,7 @@ class PixelConfigurationWidget(QWidget):
         Optional [`pymmcore_plus.CMMCorePlus`][] micromanager core.
         By default, None. If not specified, the widget will use the active
         (or create a new)
-        [`CMMCorePlus.instance`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance].
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
     """
 
     def __init__(
@@ -144,8 +144,9 @@ class PixelConfigurationWidget(QWidget):
 
         Returns
         -------
-        list[PixelSizePreset][pymmcore_plus.model.PixelSizePreset]
-            A list of pixel configurations data.
+        list[PixelSizePreset]
+            A list of pixel configurations data
+            ([`PixelSizePreset`][pymmcore_plus.model.PixelSizePreset] objects).
 
         Example:
         -------
@@ -165,8 +166,9 @@ class PixelConfigurationWidget(QWidget):
 
         Parameters
         ----------
-        value : list[PixelSizePreset][pymmcore_plus.model.PixelSizePreset]
-            The list of pixel configurations data to set.
+        value : list[PixelSizePreset]
+            The list of pixel configurations data
+            ([`PixelSizePreset`][pymmcore_plus.model.PixelSizePreset] objects) to set.
 
         Example:
         -------
@@ -626,10 +628,11 @@ class _PropertySelector(QWidget):
     def value(self) -> list[Setting]:
         """Return the list of checked (device, property, value).
 
-        Parameters
-        ----------
-        value : list[Setting][pymmcore_plus.model.Setting]
-            List of (device, property, value) to be checked in the DevicePropertyTable.
+        Returns
+        -------
+        list[Setting]
+            The checked (device, property, value) settings
+            ([`Setting`][pymmcore_plus.model.Setting] objects).
         """
         return [
             Setting(device_name=dev, property_name=prop, property_value=val)
@@ -641,8 +644,10 @@ class _PropertySelector(QWidget):
 
         Parameters
         ----------
-        value : list[Setting][pymmcore_plus.model.Setting]
-            List of (device, property, value) to be checked in the DevicePropertyTable.
+        value : list[Setting]
+            List of (device, property, value) settings
+            ([`Setting`][pymmcore_plus.model.Setting] objects) to be checked in the
+            DevicePropertyTable.
         """
         # if value is empty, uncheck all the rows
         if not value:

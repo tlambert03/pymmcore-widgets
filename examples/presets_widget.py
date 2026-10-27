@@ -11,7 +11,7 @@ from pymmcore_widgets import PresetsWidget
 
 app = QApplication([])
 
-mmc = CMMCorePlus().instance()
+mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
 wdg = QWidget()

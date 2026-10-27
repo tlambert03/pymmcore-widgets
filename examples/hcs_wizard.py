@@ -4,12 +4,10 @@ import useq
 from pymmcore_plus import CMMCorePlus
 from qtpy.QtWidgets import QApplication
 
-from pymmcore_widgets import StageWidget
+from pymmcore_widgets import HCSWizard, StageWidget
 
 with suppress(ImportError):
     from rich import print
-
-from pymmcore_widgets.hcs import HCSWizard
 
 app = QApplication([])
 mmc = CMMCorePlus.instance()

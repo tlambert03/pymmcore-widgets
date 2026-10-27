@@ -222,6 +222,8 @@ TableBoolWidget = WdgGetSet(
 
 @dataclass(frozen=True)
 class BoolColumn(WidgetColumn):
+    """Column of checkboxes (`bool` values)."""
+
     data_type: WdgGetSet = TableBoolWidget
 
 
@@ -288,6 +290,8 @@ class _RangeColumn(WidgetColumn, Generic[W, T]):
 
 @dataclass(frozen=True)
 class IntColumn(_RangeColumn):
+    """Column of integer spin boxes, between `minimum` and `maximum`."""
+
     data_type: WdgGetSet = TableIntWidget
     minimum: int = 0
     maximum: int = 999_999_999
@@ -295,6 +299,8 @@ class IntColumn(_RangeColumn):
 
 @dataclass(frozen=True)
 class FloatColumn(_RangeColumn):
+    """Column of float spin boxes, between `minimum` and `maximum`."""
+
     data_type: WdgGetSet = TableFloatWidget
 
 
@@ -472,6 +478,8 @@ TableTimeWidget = WdgGetSet(
 
 @dataclass(frozen=True)
 class TimeDeltaColumn(WidgetColumn):
+    """Column of durations, typed as text with units (e.g. `"1.5 s"`, `"2 min"`)."""
+
     data_type: WdgGetSet[QTimeLineEdit, float] = TableTimeWidget
     minimum_unit: Unit = "seconds"
 
@@ -525,6 +533,8 @@ ChoiceWidget = WdgGetSet(
 
 @dataclass(frozen=True)
 class ChoiceColumn(WidgetColumn):
+    """Column of combo boxes, choosing from `allowed_values`."""
+
     data_type: WdgGetSet[CheckableCombo, str] = ChoiceWidget
     allowed_values: tuple[str, ...] | None = None
 

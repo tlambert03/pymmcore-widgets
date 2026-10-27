@@ -1,6 +1,6 @@
 """Example usage of the ChannelWidget class.
 
-Check also the 'image_widget.py' example to see the ChannelWidget
+Check also the 'image_preview.py' example to see the ChannelWidget
 used in combination of other widgets.
 """
 
@@ -11,7 +11,7 @@ from pymmcore_widgets import ChannelWidget
 
 app = QApplication([])
 
-mmc = CMMCorePlus().instance()
+mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
 ch_wdg = ChannelWidget()

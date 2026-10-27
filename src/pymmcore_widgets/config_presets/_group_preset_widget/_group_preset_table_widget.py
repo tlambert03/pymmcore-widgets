@@ -54,7 +54,7 @@ class _MainTable(QTableWidget):
 
 
 class GroupPresetTableWidget(QWidget):
-    """A Widget to view and set micromanager group presets.
+    """Table of all configuration groups, to view and set their presets.
 
     Shows a table of config groups with their current preset values.
     Provides an "Edit Groups and Presets" button that opens a

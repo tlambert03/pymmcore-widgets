@@ -113,7 +113,26 @@ class _LogReader(QObject):
 
 
 class CoreLogWidget(QWidget):
-    """High-performance log console with pause, follow-tail, clear, and initial load."""
+    """Live view of the core's log file.
+
+    It shows the end of the file when it opens, then follows new lines as they are
+    written.  There are buttons to pause, clear the view, and turn on debug logging.
+
+    Parameters
+    ----------
+    path : str | None
+        Log file to show. By default, None, meaning the core's primary log file
+        ([`getPrimaryLogFile`][pymmcore_plus.CMMCorePlus.getPrimaryLogFile]).
+    max_lines : int
+        Maximum number of lines kept in the view. By default, 5000.
+    parent : QWidget | None
+        Optional parent widget. By default, None.
+    mmcore : CMMCorePlus | None
+        Optional [`pymmcore_plus.CMMCorePlus`][] micromanager core.
+        By default, None. If not specified, the widget will use the active
+        (or create a new)
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
+    """
 
     def __init__(
         self,

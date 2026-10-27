@@ -103,9 +103,15 @@ _MODE_TO_USEQ: dict[Mode, type[GridPlan]] = {
 
 
 class GridPlanWidget(QScrollArea):
-    """Widget to edit a [`useq-schema` GridPlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#grid-plans)."""
+    """Widget to edit a grid plan.
+
+    The value is a [`useq.GridRowsColumns`][], [`useq.GridWidthHeight`][],
+    [`useq.GridFromEdges`][] or `useq.GridFromPolygon`, depending on the mode
+    selected in the widget.
+    """
 
     valueChanged = Signal(object)
+    """Emitted with the new grid plan when the widget changes."""
 
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
@@ -235,12 +241,12 @@ class GridPlanWidget(QScrollArea):
             self._on_change()
 
     def value(self) -> GridPlan:
-        """Return the current value of the widget as a [`useq-schema` GridPlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#grid-plans).
+        """Return the current value of the widget as a grid plan.
 
         Returns
         -------
         useq.GridFromEdges | useq.GridRowsColumns | useq.GridWidthHeight
-            The current [GridPlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#grid-plans)
+            The current grid plan
             value of the widget.
         """
         kwargs = {
@@ -255,12 +261,12 @@ class GridPlanWidget(QScrollArea):
         return self._mode.to_useq_cls()(**kwargs)
 
     def setValue(self, value: GridPlan) -> None:
-        """Set the current value of the widget from a [`useq-schema` GridPlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#grid-plans).
+        """Set the current value of the widget from a grid plan.
 
         Parameters
         ----------
         value : useq.GridFromEdges | useq.GridRowsColumns | useq.GridWidthHeight | useq.GridFromPolygon
-            The [`useq-schema` GridPlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#grid-plans)
+            The grid plan
             to set.
         """  # noqa: E501
         mode = Mode.for_grid_plan(value)

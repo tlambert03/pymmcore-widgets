@@ -5,7 +5,7 @@ from pymmcore_widgets import GroupPresetTableWidget
 
 app = QApplication([])
 
-mmc = CMMCorePlus().instance()
+mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
 group_preset_wdg = GroupPresetTableWidget()

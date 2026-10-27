@@ -21,7 +21,7 @@ COLOR_TYPE = Union[
 
 
 class ShuttersWidget(QWidget):
-    """A Widget to control shutters and Micro-Manager autoshutter.
+    """Button that opens and closes a shutter, with an optional autoshutter checkbox.
 
     Parameters
     ----------

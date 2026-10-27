@@ -13,7 +13,7 @@ from pymmcore_widgets._util import load_system_config
 
 
 class ConfigurationWidget(QWidget):
-    """A Widget to select and load a micromanager system configuration.
+    """A Widget to select and load a Micro-Manager system configuration.
 
     Parameters
     ----------
@@ -23,7 +23,7 @@ class ConfigurationWidget(QWidget):
         Optional [`pymmcore_plus.CMMCorePlus`][] micromanager core.
         By default, None. If not specified, the widget will use the active
         (or create a new)
-        [`CMMCorePlus.instance`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance].
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
     """
 
     def __init__(

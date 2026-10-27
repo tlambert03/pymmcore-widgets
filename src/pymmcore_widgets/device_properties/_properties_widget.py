@@ -19,10 +19,10 @@ if TYPE_CHECKING:
 
 
 class PropertiesWidget(QWidget):
-    """Convenience container to control a specific set of PropertyWidgets.
+    """Controls for a filtered set of device properties (a PropertyWidget each).
 
     Properties can be filtered by a number of criteria, which are passed to
-    [`CMMCorePlus.iterProperties`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.iterProperties].
+    [`CMMCorePlus.iterProperties`][pymmcore_plus.CMMCorePlus.iterProperties].
 
     Parameters
     ----------

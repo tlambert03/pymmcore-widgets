@@ -159,7 +159,7 @@ class SubSeqColumn(WidgetColumn):
 
 
 class PositionTable(DataTableWidget):
-    """Table to edit a list of [useq.Position](https://pymmcore-plus.github.io/useq-schema/schema/axes/#useq.Position)."""
+    """Table to edit a list of stage positions ([`useq.Position`][])."""
 
     NAME = TextColumn(key="name", default=None, is_row_selector=True)
     X = FloatColumn(key="x", header="X [µm]", default=0.0, maximum=MAX, minimum=-MAX)
@@ -210,7 +210,7 @@ class PositionTable(DataTableWidget):
     def value(
         self, exclude_unchecked: bool = True, exclude_hidden_cols: bool = True
     ) -> Sequence[useq.Position]:
-        """Return the current value of the table as a tuple of [useq.Position](https://pymmcore-plus.github.io/useq-schema/schema/axes/#useq.Position).
+        """Return the current value of the table as a tuple of [`useq.Position`][].
 
         Note that `exclude_hidden_cols` has the result of:
             - excluding the Z position in each of the Positions if
@@ -228,7 +228,7 @@ class PositionTable(DataTableWidget):
         Returns
         -------
         tuple[useq.Position, ...]
-            A tuple of [useq.Position](https://pymmcore-plus.github.io/useq-schema/schema/axes/#useq.Position).
+            A tuple of [`useq.Position`][].
         """
         out: list[useq.Position] = []
         for r in self.table().iterRecords(
@@ -269,12 +269,12 @@ class PositionTable(DataTableWidget):
         return tuple(out)
 
     def setValue(self, value: Sequence[useq.Position]) -> None:  # type: ignore [override]
-        """Set the current value of the table from a Sequence of [useq.Position](https://pymmcore-plus.github.io/useq-schema/schema/axes/#useq.Position).
+        """Set the current value of the table from a Sequence of [`useq.Position`][].
 
         Parameters
         ----------
         value : Sequence[useq.Position]
-            A Sequence of [useq.Position](https://pymmcore-plus.github.io/useq-schema/schema/axes/#useq.Position).
+            A Sequence of [`useq.Position`][].
         """
         _values = []
         _use_af = False

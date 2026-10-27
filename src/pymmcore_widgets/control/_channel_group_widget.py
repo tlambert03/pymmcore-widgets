@@ -9,7 +9,7 @@ NO_MATCH = "<no match>"
 
 
 class ChannelGroupWidget(QComboBox):
-    """A QComboBox to follow and control Micro-Manager ChannelGroup.
+    """Combo box that chooses which configuration group is the channel group.
 
     Parameters
     ----------
@@ -19,7 +19,7 @@ class ChannelGroupWidget(QComboBox):
         Optional [`pymmcore_plus.CMMCorePlus`][] micromanager core.
         By default, None. If not specified, the widget will use the active
         (or create a new)
-        [`CMMCorePlus.instance`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance].
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
     """
 
     def __init__(

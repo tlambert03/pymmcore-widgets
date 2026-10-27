@@ -13,7 +13,7 @@ NO_MATCH = "<no match>"
 
 
 class PresetsWidget(QWidget):
-    """A Widget to create a QCombobox containing the presets of the specified group.
+    """Combo box that shows and sets the current preset of one configuration group.
 
     Parameters
     ----------
@@ -25,7 +25,7 @@ class PresetsWidget(QWidget):
         Optional [`pymmcore_plus.CMMCorePlus`][] micromanager core.
         By default, None. If not specified, the widget will use the active
         (or create a new)
-        [`CMMCorePlus.instance`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance].
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
     """
 
     def __init__(

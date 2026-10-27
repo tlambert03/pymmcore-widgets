@@ -1,6 +1,6 @@
 """Example usage of the SnapButton class.
 
-Check also the 'image_widget.py' example to see the SnapButton
+Check also the 'image_preview.py' example to see the SnapButton
 used in combination of other widgets.
 """
 
@@ -11,7 +11,7 @@ from pymmcore_widgets import SnapButton
 
 app = QApplication([])
 
-mmc = CMMCorePlus().instance()
+mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
 snap_btn = SnapButton()

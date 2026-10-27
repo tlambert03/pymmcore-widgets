@@ -5,7 +5,7 @@ from pymmcore_widgets import PropertyBrowser
 
 app = QApplication([])
 
-mmc = CMMCorePlus().instance()
+mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
 pb_wdg = PropertyBrowser()

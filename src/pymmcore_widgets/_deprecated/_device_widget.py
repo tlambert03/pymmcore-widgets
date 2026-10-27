@@ -13,13 +13,21 @@ LABEL = Keyword.Label.value
 class DeviceWidget(QWidget):
     """A general Device Widget.
 
+    !!! warning "Deprecated"
+
+        `DeviceWidget` is deprecated (importing it emits a
+        `DeprecationWarning`).  To control a state device, use a
+        [`PropertyWidget`][pymmcore_widgets.PropertyWidget] for its `"Label"`
+        property, e.g. `PropertyWidget("Objective", "Label")`, or the
+        [`ObjectivesWidget`][pymmcore_widgets.ObjectivesWidget] for objectives.
+
     Use `DeviceWidget.for_device('device_label')` method to create a device-type
     appropriate subclass.
 
     !!! Note
 
         Currently, `DeviceWidget` only supports devices of type
-        [`StateDevice`][pymmcore_plus.core._constants.DeviceType.StateDevice]. Calling
+        [`StateDevice`][pymmcore_plus.DeviceType.StateDevice]. Calling
         `DeviceWidget.for_device("device_label")`, will create the `DeviceWidget`
         subclass [pymmcore_widgets.StateDeviceWidget][].
 
@@ -33,7 +41,7 @@ class DeviceWidget(QWidget):
         Optional [`CMMCorePlus`][pymmcore_plus.CMMCorePlus] micromanager core.
         By default, None. If not specified, the widget will use the active
         (or create a new)
-        [`CMMCorePlus.instance`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance].
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
     """
 
     def __init__(
@@ -97,7 +105,7 @@ class DeviceWidget(QWidget):
         mmcore : CMMCorePlus | None
             Optional micromanager core. If not specified, the widget will use the active
             (or create a new)
-            [`CMMCorePlus.instance`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance].
+            [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
 
         Returns
         -------
@@ -118,6 +126,14 @@ class DeviceWidget(QWidget):
 class StateDeviceWidget(DeviceWidget):
     """A Widget with a QComboBox to control the states of a StateDevice.
 
+    !!! warning "Deprecated"
+
+        `StateDeviceWidget` is deprecated (importing it emits a
+        `DeprecationWarning`).  To control a state device, use a
+        [`PropertyWidget`][pymmcore_widgets.PropertyWidget] for its `"Label"`
+        property, e.g. `PropertyWidget("Objective", "Label")`, or the
+        [`ObjectivesWidget`][pymmcore_widgets.ObjectivesWidget] for objectives.
+
     Parameters
     ----------
     device_label : str
@@ -128,7 +144,7 @@ class StateDeviceWidget(DeviceWidget):
         Optional [`pymmcore_plus.CMMCorePlus`][] micromanager core.
         By default, None. If not specified, the widget will use the active
         (or create a new)
-        [`CMMCorePlus.instance`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance].
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
     """
 
     def __init__(

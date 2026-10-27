@@ -1,3 +1,5 @@
+"""Config wizard, step 3: choose default devices and the auto-shutter setting."""
+
 from pymmcore_plus import CMMCorePlus, DeviceType, Keyword
 from pymmcore_plus.model import Microscope
 from qtpy.QtWidgets import QCheckBox, QComboBox, QFormLayout

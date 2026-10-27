@@ -5,7 +5,7 @@ from pymmcore_widgets import ChannelGroupWidget
 
 app = QApplication([])
 
-mmc = CMMCorePlus().instance()
+mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
 ch_group_wdg = ChannelGroupWidget()

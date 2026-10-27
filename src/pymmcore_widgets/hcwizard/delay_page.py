@@ -1,3 +1,5 @@
+"""Config wizard, step 4: set delays for devices that can't report when they're done."""
+
 from __future__ import annotations
 
 import webbrowser

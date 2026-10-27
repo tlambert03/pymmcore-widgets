@@ -1,3 +1,5 @@
+"""Config wizard, last step: save the configuration file."""
+
 from pathlib import Path
 
 from pymmcore_plus import CMMCorePlus

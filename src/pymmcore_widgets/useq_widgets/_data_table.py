@@ -34,6 +34,8 @@ else:
 
 
 class DataTable(QTableWidget):
+    """Table whose columns are defined by `ColumnInfo` class attributes."""
+
     valueChanged = Signal()
 
     COLUMNS: ClassVar[tuple[ColumnInfo, ...]] = ()
@@ -203,7 +205,15 @@ class DataTable(QTableWidget):
 
 
 class DataTableWidget(QWidget):
+    """A `DataTable` with a toolbar to add, select and remove rows.
+
+    Base class of [`ChannelTable`][pymmcore_widgets.ChannelTable],
+    [`PositionTable`][pymmcore_widgets.PositionTable] and
+    [`TimePlanWidget`][pymmcore_widgets.TimePlanWidget].
+    """
+
     valueChanged = Signal()
+    """Emitted (with no arguments) when the table changes; read it with `value()`."""
 
     COLUMNS: ClassVar[tuple[ColumnInfo, ...]]
 

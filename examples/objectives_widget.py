@@ -5,7 +5,7 @@ from pymmcore_widgets import ObjectivesWidget
 
 app = QApplication([])
 
-mmc = CMMCorePlus().instance()
+mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
 obj_wdg = ObjectivesWidget()

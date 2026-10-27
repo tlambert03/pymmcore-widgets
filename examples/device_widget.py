@@ -18,7 +18,7 @@ from pymmcore_widgets import DeviceWidget
 
 app = QApplication([])
 
-mmc = CMMCorePlus().instance()
+mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
 wdg = QWidget()

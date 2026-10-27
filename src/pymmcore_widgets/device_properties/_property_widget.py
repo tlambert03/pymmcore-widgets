@@ -481,6 +481,7 @@ class PropertyWidget(QWidget):
     """
 
     valueChanged = Signal(object)
+    """Emitted with the new value when the property value changes."""
 
     def __init__(
         self,

@@ -5,7 +5,7 @@ from pymmcore_widgets import ObjectivesPixelConfigurationWidget
 
 app = QApplication([])
 
-mmc = CMMCorePlus().instance()
+mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
 px_wdg = ObjectivesPixelConfigurationWidget()

@@ -4,7 +4,7 @@ For every widget listed in docs/widget_list.json this writes (all gitignored):
 
 - docs/images/generated/<snake>.png       screenshot from examples/<snake>.py
 - docs/images/generated/<snake>-dark.png  the same, in dark mode
-- docs/api/pymmcore_widgets/<W>.md        API page (screenshot, API, example)
+- docs/api/pymmcore_widgets/<W>.md        widget page (screenshot, example, API)
 - docs/_generated/<category>.md           gallery cards, for docs/widgets/index.md
 
 All examples run in this process (with Qt's offscreen platform, unless
@@ -48,6 +48,10 @@ EXAMPLE_NAMES = {"StageExplorer": "stage_explorer_widget"}
 SKIP = {"QFrame", "QMenu"}
 TIMEOUT = 120  # seconds, per example
 
+# The screenshot and the code that made it come first, then the API.
+# - inherited_members: e.g. MDAWidget's valueChanged and time_plan come from
+#   MDASequenceWidget, and ChannelTable's value/setValue from DataTableWidget
+# - filters: Qt's event handlers and size hints aren't API anyone calls
 PAGE = """\
 ---
 title: {widget}
@@ -57,12 +61,18 @@ edit_url: {edit_url}
 # {widget} {{#pymmcore_widgets.{widget}}}
 
 {figure}
+{example}
+## API
+
 ::: pymmcore_widgets.{widget}
     options:
       show_root_heading: false
-      heading_level: 2
-
-{example}
+      heading_level: 3
+      inherited_members: true
+      filters:
+        - "!^_"
+        - "!^[a-z][a-zA-Z]*Event$"
+        - "!^(eventFilter|sizeHint|minimumSizeHint)$"
 """
 
 FIGURE = """\

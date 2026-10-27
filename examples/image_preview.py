@@ -1,3 +1,8 @@
+"""ImagePreview shows the latest image from the core (snapped or live).
+
+Here it's combined with a few other widgets into a minimal "snap and live" window.
+"""
+
 from pymmcore_plus import CMMCorePlus
 from qtpy.QtWidgets import QApplication, QGroupBox, QHBoxLayout, QVBoxLayout, QWidget
 
@@ -54,9 +59,9 @@ class ImageFrame(QWidget):
 
 
 if __name__ == "__main__":
-    mmc = CMMCorePlus().instance()
-    mmc.loadSystemConfiguration()
     app = QApplication([])
+    mmc = CMMCorePlus.instance()
+    mmc.loadSystemConfiguration()
     frame = ImageFrame()
     frame.show()
     mmc.snap()

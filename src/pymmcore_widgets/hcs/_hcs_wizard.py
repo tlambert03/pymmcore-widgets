@@ -16,7 +16,7 @@ from ._plate_calibration_widget import PlateCalibrationWidget
 
 
 class HCSWizard(QWizard):
-    """A wizard to setup an High Content Screening (HCS) experiment.
+    """A wizard to set up a high-content screening (HCS) experiment.
 
     This widget can be used to select a plate, calibrate it, and then select the number
     of images (and their arrangement) to acquire per well.  The output is a
@@ -27,7 +27,10 @@ class HCSWizard(QWizard):
     parent : QWidget | None
         The parent widget. By default, None.
     mmcore : CMMCorePlus | None
-        The CMMCorePlus instance. By default, None.
+        Optional [`pymmcore_plus.CMMCorePlus`][] micromanager core, used to
+        calibrate the plate. By default, None. If not specified, the widget will use
+        the active (or create a new)
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
     """
 
     def __init__(

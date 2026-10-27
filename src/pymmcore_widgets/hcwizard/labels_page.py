@@ -1,3 +1,5 @@
+"""Config wizard, step 5: name the positions of state devices (filter wheels...)."""
+
 from typing import cast
 
 from pymmcore_plus import CMMCorePlus, DeviceType

@@ -5,7 +5,7 @@ from pymmcore_widgets import CameraRoiWidget
 
 app = QApplication([])
 
-mmc = CMMCorePlus().instance()
+mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
 # this widget supports multiple camera devices

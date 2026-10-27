@@ -41,9 +41,10 @@ UM = "\u00b5m"  # MICRO SIGN
 
 
 class ZPlanWidget(QWidget):
-    """Widget to edit a [useq.ZPlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#z-plans)."""
+    """Widget to edit a z plan ([`useq.AnyZPlan`][])."""
 
     valueChanged = Signal(object)
+    """Emitted with the new z plan (or `None`) when the widget changes."""
 
     # public widgets
     top: QDoubleSpinBox
@@ -334,13 +335,12 @@ class ZPlanWidget(QWidget):
             self.step.setValue(float(self._suggested))
 
     def value(self) -> useq.ZAboveBelow | useq.ZRangeAround | useq.ZTopBottom | None:
-        """Return the current value of the widget as a [useq.ZPlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#z-plans).
+        """Return the current value of the widget as a z plan ([`useq.AnyZPlan`][]).
 
         Returns
         -------
         useq.ZAboveBelow | useq.ZRangeAround | useq.ZTopBottom | None
-        The current [useq.ZPlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#z-plans)
-        value of the widget.
+            The current z plan of the widget (`None` if the step size is 0).
         """
         if self.step.value() == 0:
             return None
@@ -364,14 +364,12 @@ class ZPlanWidget(QWidget):
     def setValue(
         self, value: useq.ZAboveBelow | useq.ZRangeAround | useq.ZTopBottom
     ) -> None:
-        """Set the current value of the widget from a [useq.ZPlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#z-plans).
+        """Set the current value of the widget from a z plan ([`useq.AnyZPlan`][]).
 
         Parameters
         ----------
         value : useq.ZAboveBelow | useq.ZRangeAround | useq.ZTopBottom
-            The
-            [useq.ZPlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#z-plans)
-            to set.
+            The z plan to set.
         """
         if isinstance(value, useq.ZTopBottom):
             self.top.setValue(value.top)

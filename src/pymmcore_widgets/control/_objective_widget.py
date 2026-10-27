@@ -9,26 +9,26 @@ from pymmcore_widgets._util import guess_objective_or_prompt
 
 
 class ObjectivesWidget(QWidget):
-    """A QComboBox-based Widget to select the microscope objective.
+    """Combo box that shows and sets the current objective.
 
     Parameters
     ----------
     objective_device : str | None
         Device label for the micromanager objective device. By default, it will be
         guessed using the
-        [`CMMCorePlus.guessObjectiveDevices`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.guessObjectiveDevices]
+        [`CMMCorePlus.guessObjectiveDevices`][pymmcore_plus.CMMCorePlus.guessObjectiveDevices]
         method and a choice dialog will be presented if there are multiple options.
         This method looks for a micromanager device matching the default regex
         `re.compile("(.+)?(nosepiece|obj(ective)?)(turret)?s?", re.IGNORECASE)`.
         To change the search pattern, set
-        [`CMMCorePlus.objective_device_pattern`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.objective_device_pattern].
+        [`CMMCorePlus.objective_device_pattern`][pymmcore_plus.CMMCorePlus.objective_device_pattern].
     parent : QWidget | None
         Optional parent widget, by default None
     mmcore : CMMCorePlus | None
         Optional [`pymmcore_plus.CMMCorePlus`][] micromanager core.
         By default, None. If not specified, the widget will use the active
         (or create a new)
-        [`CMMCorePlus.instance`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance].
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
     """
 
     def __init__(

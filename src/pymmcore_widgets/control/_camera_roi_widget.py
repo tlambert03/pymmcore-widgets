@@ -66,11 +66,12 @@ class CameraRoiWidget(QWidget):
         Optional [`pymmcore_plus.CMMCorePlus`][] micromanager core.
         By default, None. If not specified, the widget will use the active
         (or create a new)
-        [`CMMCorePlus.instance`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance].
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
     """
 
     # (x, y, width, height, comboBoxText)
     roiChanged = Signal(int, int, int, int, str)
+    """Emitted with `(x, y, width, height, roi_name)` when the camera ROI changes."""
 
     def __init__(
         self,

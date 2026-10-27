@@ -5,7 +5,7 @@ from pymmcore_widgets import ExposureWidget
 
 app = QApplication([])
 
-mmc = CMMCorePlus().instance()
+mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
 exp_wdg = ExposureWidget()

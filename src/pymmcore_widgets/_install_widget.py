@@ -39,9 +39,9 @@ LOC_ROLE = Qt.ItemDataRole.UserRole + 1
 
 
 class InstallWidget(QWidget):
-    """Widget to manage installation of MicroManager.
+    """Widget to install Micro-Manager's device adapters (like `mmcore install`).
 
-    This widget will let you download and install a specific version of MicroManager
+    This widget will let you download and install a specific version of Micro-Manager
     from <https://micro-manager.org/downloads>. It will also manage the currently
     installed versions.
     """

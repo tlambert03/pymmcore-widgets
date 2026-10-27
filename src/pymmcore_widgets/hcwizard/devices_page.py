@@ -1,3 +1,5 @@
+"""Config wizard, step 2: add and remove devices."""
+
 from __future__ import annotations
 
 import logging

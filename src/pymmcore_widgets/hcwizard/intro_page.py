@@ -1,3 +1,5 @@
+"""Config wizard, step 1: start a new configuration or edit an existing file."""
+
 import logging
 import os
 

@@ -19,8 +19,13 @@ app = QApplication([])
 CMMCorePlus.instance().loadSystemConfiguration()
 
 wdg = MDAWidget()
-wdg.channels.setChannelGroups({"Channel": ["DAPI", "FITC"]})
-wdg.time_plan.setValue(useq.TIntervalLoops(interval=0.5, loops=11))
+# start from a sequence (or build one in the GUI)
+wdg.setValue(
+    useq.MDASequence(
+        channels=["DAPI", "FITC"],
+        time_plan=useq.TIntervalLoops(interval=0.5, loops=11),
+    )
+)
 wdg.valueChanged.connect(lambda: print(wdg.value()))
 wdg.show()
 app.exec()

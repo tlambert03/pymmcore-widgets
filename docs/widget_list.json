@@ -1,49 +1,49 @@
 {
-  "configuration_widgets": [
-    "GroupPresetTableWidget",
-    "InstallWidget",
-    "PixelConfigurationWidget",
-    "ObjectivesPixelConfigurationWidget",
-    "ConfigurationWidget",
-    "PresetsWidget",
-    "ConfigWizard",
-    "ConfigGroupsEditor",
-    "ConfigGroupsTree"
-  ],
-  "device_property_widgets": [
-    "PropertyBrowser",
-    "PropertyWidget",
-    "PropertiesWidget"
-  ],
-  "mda_widgets": [
-    "MDAWidget",
-    "ChannelTable",
-    "PositionTable",
-    "TimePlanWidget",
-    "ZPlanWidget",
-    "GridPlanWidget",
-    "MDASequenceWidget",
-    "HCSWizard"
-  ],
   "camera_widgets": [
-    "CameraRoiWidget",
+    "SnapButton",
+    "LiveButton",
+    "ImagePreview",
+    "ExposureWidget",
     "DefaultCameraExposureWidget",
-    "ExposureWidget"
+    "CameraRoiWidget"
+  ],
+  "state_widgets": [
+    "ChannelWidget",
+    "ChannelGroupWidget",
+    "ObjectivesWidget",
+    "PresetsWidget",
+    "GroupPresetTableWidget",
+    "ShuttersWidget"
   ],
   "stage_widgets": [
     "StageWidget",
     "StageExplorer"
   ],
-  "shutter_widgets": [
-    "ShuttersWidget"
+  "device_property_widgets": [
+    "PropertyBrowser",
+    "PropertiesWidget",
+    "PropertyWidget"
   ],
-  "misc_widgets": [
-    "ObjectivesWidget",
-    "ChannelGroupWidget",
-    "ChannelWidget",
-    "ImagePreview",
-    "SnapButton",
-    "LiveButton",
+  "mda_widgets": [
+    "MDAWidget",
+    "HCSWizard"
+  ],
+  "sequence_widgets": [
+    "MDASequenceWidget",
+    "ChannelTable",
+    "TimePlanWidget",
+    "ZPlanWidget",
+    "PositionTable",
+    "GridPlanWidget"
+  ],
+  "configuration_widgets": [
+    "ConfigurationWidget",
+    "ConfigWizard",
+    "ConfigGroupsEditor",
+    "ConfigGroupsTree",
+    "PixelConfigurationWidget",
+    "ObjectivesPixelConfigurationWidget",
+    "InstallWidget",
     "CoreLogWidget"
   ]
 }

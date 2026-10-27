@@ -100,7 +100,7 @@ class MDAWidget(MDASequenceWidget):
         Optional [`CMMCorePlus`][pymmcore_plus.CMMCorePlus] micromanager core.
         By default, None. If not specified, the widget will use the active
         (or create a new)
-        [`CMMCorePlus.instance`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance].
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
     """
 
     def __init__(
@@ -158,7 +158,11 @@ class MDAWidget(MDASequenceWidget):
     # ------------------- public Methods ----------------------
 
     def value(self) -> MDASequence:
-        """Set the current state of the widget from a [`useq.MDASequence`][]."""
+        """Return the current state of the widget as a [`useq.MDASequence`][].
+
+        Some fields are filled in from the current state of the core.  For example,
+        if there are no stage positions, the current stage position is used.
+        """
         val = super().value()
         replace: dict = {}
 
@@ -209,7 +213,7 @@ class MDAWidget(MDASequenceWidget):
         return val
 
     def setValue(self, value: MDASequence) -> None:
-        """Get the current state of the widget as a [`useq.MDASequence`][]."""
+        """Set the state of the widget from a [`useq.MDASequence`][]."""
         super().setValue(value)
         self.save_info.setValue(value.metadata.get(PYMMCW_METADATA_KEY, {}))
 
@@ -283,6 +287,12 @@ class MDAWidget(MDASequenceWidget):
         self._mmc.run_mda(sequence, output=output)
 
     def run_mda(self) -> None:
+        """Run the current sequence (what the "Run" button does).
+
+        Calls [`prepare_mda`][pymmcore_widgets.MDAWidget.prepare_mda], then
+        [`execute_mda`][pymmcore_widgets.MDAWidget.execute_mda] unless preparation
+        was cancelled.
+        """
         save_path = self.prepare_mda()
         if isinstance(save_path, bool):
             return

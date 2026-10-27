@@ -10,34 +10,32 @@ from ._presets_widget import PresetsWidget
 
 
 class ChannelWidget(QWidget):
-    """A QComboBox to select which micromanager channel configuration to use.
+    """Combo box that shows and sets the current channel.
+
+    The choices are the presets of the channel group.
 
     Parameters
     ----------
     channel_group : str | None
         Name of the micromanager group defining the microscope channels. By default,
         it will be guessed using the
-        [`CMMCorePlus.getOrGuessChannelGroup`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.getOrGuessChannelGroup]
+        [`CMMCorePlus.getOrGuessChannelGroup`][pymmcore_plus.CMMCorePlus.getOrGuessChannelGroup]
         method and a choice dialog will be presented if there are multiple options.
         This method looks for a group configuration name matching the default regex
         `re.compile("(chan{1,2}(el)?|filt(er)?)s?", re.IGNORECASE)`.
-        A different string/regex can be set using the
-        [`CMMCorePlus.channelGroup_pattern`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.channelGroup_pattern]
-        method.
+        A different string/regex can be set with the
+        [`CMMCorePlus.channelGroup_pattern`][pymmcore_plus.CMMCorePlus.channelGroup_pattern]
+        property.
     parent : QWidget | None
         Optional parent widget. By default, None.
     mmcore : CMMCorePlus | None
         Optional [`pymmcore_plus.CMMCorePlus`][] micromanager core.
         By default, None. If not specified, the widget will use the active
         (or create a new)
-        [`CMMCorePlus.instance`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance].
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
 
-    Examples
-    --------
-    !!! example "Combining `ChannelWidget` with other widgets"
-
-        see [ImagePreview](ImagePreview.md#example)
-
+    See the [`ImagePreview`][pymmcore_widgets.ImagePreview] example for this
+    widget combined with an image preview and other controls.
     """
 
     def __init__(

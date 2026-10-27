@@ -271,6 +271,7 @@ class MDASequenceWidget(QWidget):
     """
 
     valueChanged = Signal()
+    """Emitted (with no arguments) when the sequence changes; read it with `value()`."""
 
     def __init__(
         self,

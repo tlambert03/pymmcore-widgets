@@ -18,7 +18,7 @@ _DEFAULT_WAIT = 10
 
 
 class ImagePreview(QWidget):
-    """A Widget that displays the last image snapped by active core.
+    """A Widget that displays the latest image from the core.
 
     This widget will automatically update when the active core snaps an image, when the
     active core starts streaming or when a Multi-Dimensional Acquisition is running.
@@ -31,7 +31,7 @@ class ImagePreview(QWidget):
         Optional [`pymmcore_plus.CMMCorePlus`][] micromanager core.
         By default, None. If not specified, the widget will use the active
         (or create a new)
-        [`CMMCorePlus.instance`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance].
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
     use_with_mda: bool
         If False, the widget will not update when a Multi-Dimensional Acquisition is
         running. By default, True.

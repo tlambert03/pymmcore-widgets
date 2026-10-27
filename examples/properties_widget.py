@@ -11,7 +11,7 @@ from pymmcore_widgets import PropertiesWidget
 
 app = QApplication([])
 
-mmc = CMMCorePlus().instance()
+mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
 wdg = PropertiesWidget(

@@ -104,7 +104,7 @@ class PositionIndicator(str, Enum):
 
 
 class StageExplorer(QWidget):
-    """A stage positions explorer widget.
+    """Zoomable view of the stage, where snapped images appear at their positions.
 
     This widget provides a visual representation of the stage positions. The user can
     interact with the stage positions by panning and zooming the view. The user can also
@@ -119,7 +119,7 @@ class StageExplorer(QWidget):
         Optional [`CMMCorePlus`][pymmcore_plus.CMMCorePlus] micromanager core.
         By default, None. If not specified, the widget will use the active
         (or create a new)
-        [`CMMCorePlus.instance`][pymmcore_plus.core._mmcore_plus.CMMCorePlus.instance].
+        [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
 
     Properties
     ----------

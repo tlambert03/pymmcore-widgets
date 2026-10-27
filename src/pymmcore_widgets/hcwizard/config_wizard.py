@@ -1,3 +1,5 @@
+"""The Hardware Configuration Wizard (`ConfigWizard`)."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -36,7 +38,8 @@ class ConfigWizard(QWizard):
     config_file : str, optional
         Path to a configuration file to load, by default "".
     core : CMMCorePlus, optional
-        A CMMCorePlus instance, by default, uses the global singleton.
+        A CMMCorePlus instance, by default, uses the global singleton.  (Note that
+        this parameter is called `core`, where other widgets use `mmcore`.)
     parent : QWidget, optional
         The parent widget, by default None.
     """

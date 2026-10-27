@@ -65,6 +65,7 @@ class WellPlateWidget(QWidget):
     """
 
     valueChanged = Signal(object)
+    """Emitted with the new `useq.WellPlatePlan` when the plate or selection changes."""
 
     def __init__(
         self,

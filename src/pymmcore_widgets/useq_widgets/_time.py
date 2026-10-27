@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class TimePlanWidget(DataTableWidget):
-    """Table to edit a [useq.TimePlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#time-plans)."""
+    """Table to edit a time plan ([`useq.AnyTimePlan`][]), one row per phase."""
 
     PHASE = TextColumn(key="phase", default=None, is_row_selector=True)
     INTERVAL = TimeDeltaColumn(
@@ -42,12 +42,12 @@ class TimePlanWidget(DataTableWidget):
     def value(
         self, exclude_unchecked: bool = True
     ) -> MultiPhaseTimePlan | TIntervalLoops | TIntervalDuration:
-        """Return the current value of the table as a [useq.TimePlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#time-plans).
+        """Return the current value of the table as a [`useq.AnyTimePlan`][].
 
         Returns
         -------
         MultiPhaseTimePlan | TIntervalLoops | TIntervalDuration
-            The current [useq.TimePlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#time-plans)
+            The current time plan ([`useq.AnyTimePlan`][])
             value of the table.
         """
         duration_col = self.table().indexOf(self.DURATION)
@@ -60,13 +60,13 @@ class TimePlanWidget(DataTableWidget):
         return plan.phases[0] if len(plan.phases) == 1 else plan  # type: ignore
 
     def setValue(self, value: Any) -> None:
-        """Set the current value of the table from a [useq.TimePlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#time-plans).
+        """Set the current value of the table from a time plan ([`useq.AnyTimePlan`][]).
 
         Parameters
         ----------
         value : MultiPhaseTimePlan | TIntervalLoops | TDurationLoops | TIntervalDuration | None
             The
-            [useq.TimePlan](https://pymmcore-plus.github.io/useq-schema/schema/axes/#time-plans)
+            time plan ([`useq.AnyTimePlan`][])
             to set.
         """  # noqa: E501
         if isinstance(value, MultiPhaseTimePlan):

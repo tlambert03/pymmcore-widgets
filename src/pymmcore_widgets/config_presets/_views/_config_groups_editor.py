@@ -73,12 +73,24 @@ else:
 
 
 class ConfigGroupsEditor(QWidget):
-    """Widget composed of two QListViews backed by a single tree model."""
+    """Editor for configuration groups and their presets.
+
+    The editor doesn't change the core.  Build it from a core with
+    [`create_from_core`][pymmcore_widgets.ConfigGroupsEditor.create_from_core], and
+    connect to `applyRequested` to apply the user's changes.
+    """
 
     configChanged = Signal()
+    """Emitted (with no arguments) whenever the user edits a group or preset."""
     applyRequested = Signal(
         list, list, object
     )  # list[ConfigGroup], list[str], str|None
+    """Emitted when the user clicks "Apply".
+
+    Arguments are `(changed, deleted, channel_group)`: the new or changed
+    `ConfigGroup`s, the names of deleted groups, and the name of the group that
+    should become the channel group (or `None` if that didn't change).
+    """
 
     @classmethod
     def create_from_core(

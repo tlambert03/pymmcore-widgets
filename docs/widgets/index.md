@@ -1,46 +1,71 @@
-# Widget gallery
+# Widget Gallery
 
-Every widget in `pymmcore-widgets`, **grouped by functionality**. Click a widget for its
-API reference and a runnable example (screenshots are generated from those examples).
+The top-level widgets in `pymmcore-widgets`, grouped by what they do, roughly in the
+order you'd reach for them when building a GUI.  Click a widget for a runnable example
+and its API (the screenshots are generated from those examples).
 
-## Camera Widgets
+Most of these widgets control a [`CMMCorePlus`][pymmcore_plus.CMMCorePlus] (by
+default the global [`CMMCorePlus.instance()`][pymmcore_plus.CMMCorePlus.instance], or
+the one you pass as `mmcore=`).  They follow the core's
+[events](../../pymmcore-plus/guides/events.md), so they stay in sync with each other
+and with your own code.  The [sequence editors](#sequence-editors) are the exception:
+they don't use a core at all.  (See [Building a custom
+GUI](../getting_started.md#choosing-a-core) for the details.)
 
-The widgets in this section can be used to **control** any `Micro-Manager` device of type [CameraDevice][pymmcore_plus.DeviceType.CameraDevice].
+## Camera and images
+
+Snap and live buttons, an image preview, and the camera's exposure and ROI.
 
 --8<-- "docs/_generated/camera_widgets.md"
 
-## Configuration Widgets
+## Channels, objectives and presets
 
-The widgets in this section can be used to **create, load and modify a Micro-Manager configuration** file.
+These widgets show (and change) the current state of the microscope: the channel, the
+objective, the preset of any configuration group, and the shutters.
 
---8<-- "docs/_generated/configuration_widgets.md"
+--8<-- "docs/_generated/state_widgets.md"
 
-## Devices and Properties Widgets
+## Stages
 
-The widgets in this section can be used to **control and intract with the devices and properties** of a `Micro-Manager` core ([CMMCorePlus][pymmcore_plus.CMMCorePlus]).
-
---8<-- "docs/_generated/device_property_widgets.md"
-
-## Multi-Dimensional Acquisition Widgets
-
-The widgets in this section can be used to **define (and run) a multi-dimensional acquisition** based on the [useq-schema `MDASequence`][useq.MDASequence].
-
---8<-- "docs/_generated/mda_widgets.md"
-
-## Shutter Widgets
-
-The widgets in this section can be used to **control** any `Micro-Manager` [ShutterDevice][pymmcore_plus.DeviceType.ShutterDevice].
-
---8<-- "docs/_generated/shutter_widgets.md"
-
-## Stage Widgets
-
-The widgets in this section can be used to **control** any `Micro-Manager` [StageDevice][pymmcore_plus.DeviceType.StageDevice].
+Move an XY or Z stage, or explore the sample in a zoomable view of the stage, where
+snapped images appear at the position they were taken.
 
 --8<-- "docs/_generated/stage_widgets.md"
 
-## Misc Widgets
+## Devices and properties
 
-The widgets in this section are **miscellaneous** widgets that can be used for different purposes.
+View and change the properties of any of the loaded devices.
 
---8<-- "docs/_generated/misc_widgets.md"
+--8<-- "docs/_generated/device_property_widgets.md"
+
+## Acquisition
+
+Define a multi-dimensional acquisition (a [`useq.MDASequence`][]) and run it on the
+core.  [`MDAWidget`][pymmcore_widgets.MDAWidget] is the
+[`MDASequenceWidget`][pymmcore_widgets.MDASequenceWidget] below, connected to a core.
+It offers the core's channels, can add the current stage position, and has buttons to
+run, pause and cancel the acquisition.
+
+--8<-- "docs/_generated/mda_widgets.md"
+
+## Sequence editors
+
+!!! note "No core needed"
+
+    These widgets edit `useq` objects and don't touch the microscope.  Read the
+    result with `value()`, set it with `setValue()`, and connect to `valueChanged`
+    to hear about changes.  Use them to describe an experiment in your own GUI; to
+    run one, pass the sequence to
+    [`CMMCorePlus.run_mda`][pymmcore_plus.CMMCorePlus.run_mda] (or use the
+    [`MDAWidget`][pymmcore_widgets.MDAWidget] above).
+
+--8<-- "docs/_generated/sequence_widgets.md"
+
+## Configuration and setup
+
+Load, create and edit a configuration file (the
+[`ConfigWizard`][pymmcore_widgets.ConfigWizard] is Micro-Manager's Hardware
+Configuration Wizard), set pixel sizes, install device adapters, and watch the core's
+log.
+
+--8<-- "docs/_generated/configuration_widgets.md"

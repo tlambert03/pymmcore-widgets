@@ -27,7 +27,11 @@ DEFAULT_GROUP = Keyword.Channel
 
 
 class ChannelTable(DataTableWidget):
-    """Table to edit a list of [useq.Channels](https://pymmcore-plus.github.io/useq-schema/schema/axes/#useq.Channel)."""
+    """Table to edit a list of channels ([`useq.Channel`][]).
+
+    It doesn't use a core: call `setChannelGroups` to say which channel groups
+    and presets to offer.
+    """
 
     # fmt: off
     GROUP = TextColumn(key="group", default=DEFAULT_GROUP, hidden=True)
@@ -93,7 +97,7 @@ class ChannelTable(DataTableWidget):
         return self._groups
 
     def value(self, exclude_unchecked: bool = True) -> tuple[useq.Channel, ...]:
-        """Return the current value of the table as a tuple of [useq.Channels](https://pymmcore-plus.github.io/useq-schema/schema/axes/#useq.Channel).
+        """Return the current value of the table as a tuple of [`useq.Channel`][].
 
         Parameters
         ----------
@@ -103,7 +107,7 @@ class ChannelTable(DataTableWidget):
         Returns
         -------
         tuple[useq.Channel, ...]
-            A tuple of [useq.Channels](https://pymmcore-plus.github.io/useq-schema/schema/axes/#useq.Channel).
+            A tuple of [`useq.Channel`][].
         """
         return tuple(
             useq.Channel(**r)
@@ -111,12 +115,12 @@ class ChannelTable(DataTableWidget):
         )
 
     def setValue(self, value: Iterable[useq.Channel]) -> None:
-        """Set the current value of the table from an Iterable of [useq.Channels](https://pymmcore-plus.github.io/useq-schema/schema/axes/#useq.Channel).
+        """Set the current value of the table from an Iterable of [`useq.Channel`][].
 
         Parameters
         ----------
         value : Iterable[useq.Channel]
-            An Iterable of [useq.Channels](https://pymmcore-plus.github.io/useq-schema/schema/axes/#useq.Channel).
+            An Iterable of [`useq.Channel`][].
         """
         _values = []
         groups: set[str] = set()

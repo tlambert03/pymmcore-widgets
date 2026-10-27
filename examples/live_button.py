@@ -1,6 +1,6 @@
 """Example usage of the LiveButton class.
 
-Check also the 'image_widget.py' example to see the LiveButton
+Check also the 'image_preview.py' example to see the LiveButton
 used in combination of other widgets.
 """
 
@@ -11,7 +11,7 @@ from pymmcore_widgets import LiveButton
 
 app = QApplication([])
 
-mmc = CMMCorePlus().instance()
+mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
 live_btn = LiveButton()

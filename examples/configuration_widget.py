@@ -5,7 +5,7 @@ from pymmcore_widgets import ConfigurationWidget
 
 app = QApplication([])
 
-mmc = CMMCorePlus().instance()
+mmc = CMMCorePlus.instance()
 mmc.loadSystemConfiguration()
 
 cfg_wdg = ConfigurationWidget()

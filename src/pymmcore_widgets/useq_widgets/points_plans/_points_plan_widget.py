@@ -10,7 +10,7 @@ from ._well_graphics_view import WellView
 
 
 class PointsPlanWidget(QWidget):
-    """Widget to select the FOVVs per well of the plate.
+    """Widget to select the FOVs per well of the plate.
 
     This widget allows the user to select the number of FOVs per well, (or to generally
     show a multi-point plan, such as a grid or random points plan, even if not within
@@ -30,6 +30,7 @@ class PointsPlanWidget(QWidget):
     """
 
     valueChanged = Signal(object)
+    """Emitted with the new points plan when the widget changes."""
 
     def __init__(
         self,

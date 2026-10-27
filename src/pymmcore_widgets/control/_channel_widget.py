@@ -14,6 +14,9 @@ class ChannelWidget(QWidget):
 
     The choices are the presets of the channel group.
 
+    See the [`ImagePreview`][pymmcore_widgets.ImagePreview] example for this
+    widget combined with an image preview and other controls.
+
     Parameters
     ----------
     channel_group : str | None
@@ -33,9 +36,6 @@ class ChannelWidget(QWidget):
         By default, None. If not specified, the widget will use the active
         (or create a new)
         [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
-
-    See the [`ImagePreview`][pymmcore_widgets.ImagePreview] example for this
-    widget combined with an image preview and other controls.
     """
 
     def __init__(

@@ -27,6 +27,9 @@ class SnapButton(QPushButton):
     [`imageSnapped`][pymmcore_plus.PCoreSignaler.imageSnapped] event.  If live mode
     is running, it is stopped first.
 
+    See the [`ImagePreview`][pymmcore_widgets.ImagePreview] example for this
+    widget combined with an image preview and other controls.
+
     Parameters
     ----------
     parent : QWidget | None
@@ -36,9 +39,6 @@ class SnapButton(QPushButton):
         By default, None. If not specified, the widget will use the active
         (or create a new)
         [`CMMCorePlus.instance`][pymmcore_plus.CMMCorePlus.instance].
-
-    See the [`ImagePreview`][pymmcore_widgets.ImagePreview] example for this
-    widget combined with an image preview and other controls.
     """
 
     def __init__(

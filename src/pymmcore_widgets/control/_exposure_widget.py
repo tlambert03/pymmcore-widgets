@@ -9,6 +9,9 @@ from superqt.utils import signals_blocked
 class ExposureWidget(QWidget):
     """Spin box that shows and sets the exposure time (in ms) of a camera.
 
+    See the [`ImagePreview`][pymmcore_widgets.ImagePreview] example for this
+    widget combined with an image preview and other controls.
+
     Parameters
     ----------
     camera : str | None
@@ -20,9 +23,6 @@ class ExposureWidget(QWidget):
         Optional `CMMCorePlus` micromanager core.
         By default, None. If not specified, the widget will use the active
         (or create a new) `CMMCorePlus.instance()`.
-
-    See the [`ImagePreview`][pymmcore_widgets.ImagePreview] example for this
-    widget combined with an image preview and other controls.
     """
 
     def __init__(
